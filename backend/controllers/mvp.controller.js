@@ -1,0 +1,7 @@
+const S=require('../services/mvp.service');
+const out=(fn)=>(req,res,next)=>Promise.resolve(fn(req,res)).catch(next);
+const crud=(list,get,save,del)=>({list:out(async(q,r)=>r.json({data:await list()})),get:out(async(q,r)=>r.json({data:await get(q.params.id)})),create:out(async(q,r)=>r.status(201).json({data:await save(q.body)})),update:out(async(q,r)=>r.json({data:await save(q.body,q.params.id)})),remove:out(async(q,r)=>{await del(q.params.id);r.status(204).send();})});
+const tags=crud(S.tagsList,S.tagGet,S.tagSave,S.tagDelete),services=crud(S.serviceList,S.serviceGet,S.serviceSave,S.serviceDelete);
+const repertoires=crud(S.repertoireList,S.repertoireGet,S.repertoireSave,S.repertoireDelete);
+const history=crud((...args)=>S.historyList(...args),S.historyGet,S.historySave,S.historyDelete);
+module.exports={tags,services,repertoires,history,serviceTypes:out(async(q,r)=>r.json({data:await S.serviceTypes()})),preferences:out(async(q,r)=>r.json({data:await S.preferences()})),savePreferences:out(async(q,r)=>r.json({data:await S.savePreferences(q.body)})),generate:out(async(q,r)=>r.json({data:await S.generate(q.body)})),confirm:out(async(q,r)=>r.json({data:await S.repertoireStatus(q.params.id,'CONFIRMED')})),execute:out(async(q,r)=>r.json({data:await S.repertoireStatus(q.params.id,'EXECUTED')})),historyList:out(async(q,r)=>r.json(await S.historyList(q.query))),dashboard:out(async(q,r)=>r.json({data:await S.dashboard()})),health:(q,r)=>r.json({data:{status:'ok'}})};

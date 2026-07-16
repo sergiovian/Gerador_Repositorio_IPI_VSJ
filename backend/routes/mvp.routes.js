@@ -1,0 +1,6 @@
+const express=require('express'),C=require('../controllers/mvp.controller');const r=express.Router();
+r.get('/health',C.health);r.get('/tags',C.tags.list);r.get('/tags/:id',C.tags.get);r.post('/tags',C.tags.create);r.put('/tags/:id',C.tags.update);r.delete('/tags/:id',C.tags.remove);
+r.get('/service-types',C.serviceTypes);r.get('/services',C.services.list);r.get('/services/:id',C.services.get);r.post('/services',C.services.create);r.put('/services/:id',C.services.update);r.delete('/services/:id',C.services.remove);
+r.get('/settings',C.preferences);r.put('/settings',C.savePreferences);
+r.post('/repertoires/generate',C.generate);r.get('/repertoires',C.repertoires.list);r.get('/repertoires/:id',C.repertoires.get);r.post('/repertoires',C.repertoires.create);r.put('/repertoires/:id',C.repertoires.update);r.delete('/repertoires/:id',C.repertoires.remove);r.post('/repertoires/:id/confirm',C.confirm);r.post('/repertoires/:id/execute',C.execute);
+r.get('/history',C.historyList);r.get('/history/:id',C.history.get);r.post('/history',C.history.create);r.put('/history/:id',C.history.update);r.delete('/history/:id',C.history.remove);r.get('/dashboard/summary',C.dashboard);module.exports=r;

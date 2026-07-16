@@ -1,0 +1,82 @@
+/* Paleta e elementos visuais globais da interface. */
+:root {
+  --primary: #6f42c1;
+  --primary-dark: #4f2d8a;
+  --surface: #ffffff;
+  --background: #f6f4fb;
+  --text: #25223a;
+  --muted: #77738c;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--primary-dark), var(--primary));
+}
+
+.brand-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .18);
+}
+
+.sidebar .nav-link {
+  padding: .8rem 1rem;
+  border-radius: .65rem;
+  color: rgba(255, 255, 255, .78);
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  color: #fff;
+  background: rgba(255, 255, 255, .16);
+}
+
+.main-content { min-width: 0; }
+
+.welcome-banner {
+  color: #fff;
+  background: linear-gradient(110deg, #6f42c1, #9b6de3);
+  border-radius: 1.25rem;
+}
+
+.dashboard-card {
+  height: 100%;
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(44, 33, 78, .07);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(44, 33, 78, .12);
+}
+
+.card-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 14px;
+  font-size: 1.35rem;
+}
+
+.icon-purple { background: #eee6ff; color: #6f42c1; }
+.icon-blue { background: #e2f0ff; color: #1670c5; }
+.icon-green { background: #e2f8ed; color: #218c57; }
+.icon-orange { background: #fff0dc; color: #d77a00; }
+
+@media (max-width: 767.98px) {
+  .sidebar { min-height: auto; width: 100%; }
+}

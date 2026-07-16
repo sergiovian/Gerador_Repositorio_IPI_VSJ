@@ -1,0 +1,114 @@
+/**
+ * Inicialização centralizada do SQLite.
+ *
+ * Ao importar este módulo, o diretório do banco é criado, as chaves
+ * estrangeiras são habilitadas e os arquivos schema.sql e seed.sql são
+ * executados uma única vez para a instância atual do processo.
+ */
+const fs = require('fs');
+const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
+
+const databasePath = path.resolve(
+  process.cwd(),
+  process.env.DATABASE_PATH || 'backend/database/louvor-inteligente.db'
+);
+const schemaPath = path.join(__dirname, 'schema.sql');
+const seedPath = path.join(__dirname, 'seed.sql');
+
+let database;
+let initializationPromise;
+
+/** Executa uma instrução SQL e a converte para Promise. */
+function executeSql(sql, context) {
+  return new Promise((resolve, reject) => {
+    database.exec(sql, (error) => {
+      if (error) {
+        reject(new Error(`Erro ao executar ${context}: ${error.message}`));
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
+
+/** Abre o arquivo SQLite e garante que o diretório de destino exista. */
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+
+    database = new sqlite3.Database(databasePath, (error) => {
+      if (error) {
+        reject(new Error(`Não foi possível abrir o banco de dados: ${error.message}`));
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
+
+/**
+ * Cria a estrutura e a carga inicial de forma idempotente.
+ * Chamadas concorrentes reutilizam a mesma Promise de inicialização.
+ */
+async function initializeDatabase() {
+  if (initializationPromise) {
+    return initializationPromise;
+  }
+
+  initializationPromise = (async () => {
+    try {
+      await openDatabase();
+      await executeSql('PRAGMA foreign_keys = ON;', 'a configuração de chaves estrangeiras');
+
+      const schema = fs.readFileSync(schemaPath, 'utf8');
+      const seed = fs.readFileSync(seedPath, 'utf8');
+
+      await executeSql(schema, 'o schema do banco de dados');
+      // Migração aditiva para bancos criados antes do campo de origem do histórico.
+      const columns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(music_history)', (error, rows) => error ? reject(error) : resolve(rows)));
+      if (!columns.some((column) => column.name === 'origin')) {
+        await executeSql("ALTER TABLE music_history ADD COLUMN origin TEXT NOT NULL DEFAULT 'MANUAL'", 'a migração do histórico');
+      }
+      const musicColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(music)', (error, rows) => error ? reject(error) : resolve(rows)));
+      const musicMigrations = [['hymn_number', 'INTEGER'], ['source', 'TEXT'], ['congregation_score', 'INTEGER'], ['recommended_opening', 'INTEGER'], ['recommended_offertory', 'INTEGER'], ['recommended_communion', 'INTEGER'], ['recommended_preaching', 'INTEGER'], ['recommended_closing', 'INTEGER'], ['preferred_service_types', 'TEXT'], ['difficulty_band', 'INTEGER'], ['difficulty_vocal', 'INTEGER']];
+      for (const [name, definition] of musicMigrations) if (!musicColumns.some((column) => column.name === name)) await executeSql(`ALTER TABLE music ADD COLUMN ${name} ${definition}`, `a migração do campo music.${name}`);
+      await executeSql(seed, 'os dados iniciais do banco de dados');
+
+      console.log(`Banco de dados inicializado em: ${databasePath}`);
+      return database;
+    } catch (error) {
+      console.error('Falha na inicialização do banco de dados.', error);
+
+      if (database) {
+        database.close();
+        database = undefined;
+      }
+
+      initializationPromise = undefined;
+      throw error;
+    }
+  })();
+
+  return initializationPromise;
+}
+
+/** Retorna a conexão após a inicialização ter sido concluída. */
+function getDatabase() {
+  if (!database) {
+    throw new Error('Banco de dados ainda não foi inicializado. Aguarde databaseReady.');
+  }
+
+  return database;
+}
+
+// A inicialização começa automaticamente assim que este módulo é carregado.
+const databaseReady = initializeDatabase();
+
+module.exports = {
+  databaseReady,
+  getDatabase,
+  initializeDatabase
+};

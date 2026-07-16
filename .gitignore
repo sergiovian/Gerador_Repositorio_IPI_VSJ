@@ -1,0 +1,14 @@
+# Dependências instaladas localmente
+node_modules/
+
+# Segredos e configurações locais
+.env
+
+# Arquivos de banco de dados SQLite gerados em execução
+backend/database/*.db
+backend/database/*.sqlite
+backend/database/*.sqlite3
+test/*.db
+
+# Logs do npm
+npm-debug.log*
