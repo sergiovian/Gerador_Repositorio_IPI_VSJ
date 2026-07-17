@@ -6,16 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const app = document.querySelector('#app');
     if (!app || document.querySelector('#music-import-panel')) return;
     app.insertAdjacentHTML('afterbegin', `<div class="card panel p-4 mb-3" id="music-import-panel"><div class="d-flex flex-wrap justify-content-between gap-2 align-items-center"><div><h2 class="h5 mb-1"><i class="bi bi-box-arrow-in-down"></i> Importar músicas</h2><p class="text-secondary small mb-0">Importe letras de apresentações PowerPoint ou do backup do Holyrics. Títulos repetidos serão ignorados.</p></div><button type="button" class="btn btn-outline-primary" id="open-music-import"><i class="bi bi-upload"></i> Escolher arquivo</button></div></div>`);
-    document.body.insertAdjacentHTML('beforeend', `<div class="modal fade" id="music-import-modal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5">Importar músicas</h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><label class="form-label" for="music-import-file">Arquivo Holyrics ou PowerPoint</label><input id="music-import-file" class="form-control" type="file" accept=".hbac,.ppt,.pptx"><div class="form-text">Aceitos: .hbac, .ppt e .pptx. Limite: 150 MB.</div><div id="music-import-preview" class="mt-3"></div></div><div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="confirm-music-import" disabled>Importar selecionadas</button></div></div></div></div>`);
+    document.body.insertAdjacentHTML('beforeend', `<div class="modal fade" id="music-import-modal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5">Importar músicas</h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><label class="form-label" for="music-import-file">Arquivos Holyrics JSON, backup ou PowerPoint</label><input id="music-import-file" class="form-control" type="file" accept=".json,.hbac,.ppt,.pptx" multiple><div class="form-text">Você pode selecionar vários JSONs exportados pelo Holyrics. Limite: 150 MB por envio.</div><div id="music-import-preview" class="mt-3"></div></div><div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="confirm-music-import" disabled>Importar selecionadas</button></div></div></div></div>`);
     const modal = new bootstrap.Modal(document.querySelector('#music-import-modal'));
     document.querySelector('#open-music-import').onclick = () => modal.show();
     document.querySelector('#music-import-file').onchange = async event => {
-      const file = event.target.files[0], preview = document.querySelector('#music-import-preview'), confirm = document.querySelector('#confirm-music-import');
+      const files = [...event.target.files], preview = document.querySelector('#music-import-preview'), confirm = document.querySelector('#confirm-music-import');
       songs = []; confirm.disabled = true;
-      if (!file) return;
+      if (!files.length) return;
       preview.innerHTML = '<div class="text-secondary"><span class="spinner-border spinner-border-sm"></span> Lendo arquivo…</div>';
       try {
-        const body = new FormData(); body.append('file', file);
+        const body = new FormData(); files.forEach(file => body.append('file', file));
         const response = await fetch('/api/music/import/preview', { method: 'POST', body });
         const raw = await response.text();
         let result = {};

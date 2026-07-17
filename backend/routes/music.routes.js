@@ -7,7 +7,7 @@ const multer = require('multer');
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 150 * 1024 * 1024 } });
 
-router.post('/import/preview', upload.single('file'), asyncHandler(MusicImportController.preview));
+router.post('/import/preview', upload.array('file', 2000), asyncHandler(MusicImportController.preview));
 router.post('/import/confirm', asyncHandler(MusicImportController.confirm));
 router.get('/', asyncHandler(MusicController.list));
 router.get('/activity', asyncHandler(MusicController.activity));
