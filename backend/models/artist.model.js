@@ -36,6 +36,10 @@ function findById(id) {
   return get('SELECT id, name, created_at, updated_at FROM artists WHERE id = ? AND church_id=?', [id, getCurrentChurchId()]);
 }
 
+function findByName(name) {
+  return get('SELECT id, name, created_at, updated_at FROM artists WHERE church_id=? AND name = ? COLLATE NOCASE', [getCurrentChurchId(), name]);
+}
+
 async function create({ name }) {
   const result = await run('INSERT INTO artists (church_id,name) VALUES (?,?)', [getCurrentChurchId(), name]);
   return findById(result.id);
@@ -51,4 +55,4 @@ async function remove(id) {
   return result.changes;
 }
 
-module.exports = { create, findAll, findById, remove, update };
+module.exports = { create, findAll, findById, findByName, remove, update };
