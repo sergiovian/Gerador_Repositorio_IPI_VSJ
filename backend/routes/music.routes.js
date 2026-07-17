@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', asyncHandler(MusicController.list));
 router.get('/activity', asyncHandler(MusicController.activity));
+router.delete('/activity', asyncHandler(MusicController.clearActivity));
 router.get('/:id', asyncHandler(MusicController.getById));
 router.post('/', asyncHandler(MusicController.create));
 router.put('/:id', asyncHandler(MusicController.update));

@@ -60,4 +60,5 @@ async function deleteMusic(id) {
 }
 
 async function listActivity() { return db.all('SELECT * FROM music_activity_logs WHERE church_id=? ORDER BY created_at DESC LIMIT 10', [getCurrentChurchId()]); }
-module.exports = { createMusic, deleteMusic, getMusicById, listActivity, listMusic, updateMusic };
+async function clearActivity() { await db.run('DELETE FROM music_activity_logs WHERE church_id=?', [getCurrentChurchId()]); }
+module.exports = { clearActivity, createMusic, deleteMusic, getMusicById, listActivity, listMusic, updateMusic };
