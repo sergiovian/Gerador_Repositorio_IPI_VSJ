@@ -1,9 +1,14 @@
 const express = require('express');
 const MusicController = require('../controllers/music.controller');
 const asyncHandler = require('../utils/async-handler');
+const MusicImportController = require('../controllers/music-import.controller');
+const multer = require('multer');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
+router.post('/import/preview', upload.single('file'), asyncHandler(MusicImportController.preview));
+router.post('/import/confirm', asyncHandler(MusicImportController.confirm));
 router.get('/', asyncHandler(MusicController.list));
 router.get('/activity', asyncHandler(MusicController.activity));
 router.delete('/activity', asyncHandler(MusicController.clearActivity));
