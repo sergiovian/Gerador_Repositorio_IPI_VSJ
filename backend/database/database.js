@@ -66,6 +66,8 @@ async function initializeDatabase() {
       await executeSql('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)', 'o índice de login');
       const artistColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(artists)', (error, rows) => error ? reject(error) : resolve(rows)));
       if (!artistColumns.some((column) => column.name === 'church_id')) await executeSql('ALTER TABLE artists ADD COLUMN church_id INTEGER NOT NULL DEFAULT 1', 'artist church migration');
+      const lyricColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(music)', (error, rows) => error ? reject(error) : resolve(rows)));
+      if (!lyricColumns.some((column) => column.name === 'lyrics_url')) await executeSql('ALTER TABLE music ADD COLUMN lyrics_url TEXT', 'lyrics link migration');
       await executeSql(seed, 'os dados iniciais do banco de dados');
 
       console.log(`Banco de dados inicializado em: ${databasePath}`);

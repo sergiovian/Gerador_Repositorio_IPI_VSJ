@@ -30,6 +30,7 @@ const musicSelect = `
     music.bpm,
     music.duration,
     music.lyrics,
+    music.lyrics_url,
     music.youtube_url,
     music.cifra_url,
     music.notes,
