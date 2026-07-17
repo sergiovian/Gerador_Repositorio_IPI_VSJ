@@ -5,6 +5,7 @@ const { runChurchContext } = require('./backend/constants/church-context');
 const artistRoutes = require('./backend/routes/artist.routes');
 const musicRoutes = require('./backend/routes/music.routes');
 const mvpRoutes = require('./backend/routes/mvp.routes');
+const adminRoutes = require('./backend/routes/admin.routes');
 const { errorHandler, notFoundHandler } = require('./backend/middlewares/error.middleware');
 
 const app = express();
@@ -25,7 +26,7 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/login', (req, res) => res.sendFile(path.join(frontendPath, 'login.html')));
 app.use((req, res, next) => {
   const user = sessionUser(req);
-  if (user) return runChurchContext(user.churchId, next);
+  if (user) { req.user = user; return runChurchContext(user.churchId, next); }
   if (req.path === '/login' || req.path.startsWith('/assets/') || req.path === '/api/auth/user-login' || req.path === '/api/auth/register') return next();
   if (req.path.startsWith('/api/')) return res.status(401).json({ message: 'Acesso não autorizado.' });
   return res.redirect('/login');
@@ -33,6 +34,7 @@ app.use((req, res, next) => {
 app.use(express.static(frontendPath));
 app.use('/api/artists', artistRoutes);
 app.use('/api/music', musicRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api', mvpRoutes);
 
 app.get('/', (req, res) => {

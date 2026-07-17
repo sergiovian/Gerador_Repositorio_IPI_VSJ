@@ -17,14 +17,14 @@ async function register({ churchName, responsibleName, email, username, password
 async function login(username, password) {
   const user = await db.get('SELECT u.*,c.name church_name FROM users u JOIN churches c ON c.id=u.church_id WHERE lower(u.username)=lower(?) AND u.active=1 AND c.active=1', [username]);
   if (!user || !crypto.timingSafeEqual(Buffer.from(await hash(password)), Buffer.from(user.password_hash))) throw new AppError('Login ou senha inválidos.', 401);
-  return { userId: user.id, churchId: user.church_id, username: user.username, churchName: user.church_name };
+  return { userId: user.id, churchId: user.church_id, username: user.username, churchName: user.church_name, role: user.role };
 }
 
 async function ensureIpiUser() {
   const current = await db.get('SELECT id FROM users WHERE username=?', ['ipivsj']);
   const passwordHash = await hash('852456');
-  if (!current) await db.run('INSERT INTO users(church_id,name,email,username,password_hash,role) VALUES(?,?,?,?,?,?)', [1, 'IPI Vila São José', 'ipivsj@local', 'ipivsj', passwordHash, 'ADMIN']);
-  else await db.run('UPDATE users SET church_id=1,password_hash=?,active=1 WHERE id=?', [passwordHash, current.id]);
+  if (!current) await db.run('INSERT INTO users(church_id,name,email,username,password_hash,role) VALUES(?,?,?,?,?,?)', [1, 'IPI Vila São José', 'ipivsj@local', 'ipivsj', passwordHash, 'SUPER_ADMIN']);
+  else await db.run('UPDATE users SET church_id=1,password_hash=?,role=?,active=1 WHERE id=?', [passwordHash, 'SUPER_ADMIN', current.id]);
 }
 
 module.exports = { ensureIpiUser, login, register };
