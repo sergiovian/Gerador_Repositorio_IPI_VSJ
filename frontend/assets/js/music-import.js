@@ -17,7 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const body = new FormData(); body.append('file', file);
         const response = await fetch('/api/music/import/preview', { method: 'POST', body });
-        const result = await response.json();
+        const raw = await response.text();
+        let result = {};
+        try { result = raw ? JSON.parse(raw) : {}; } catch { throw new Error('O servidor recusou o envio do arquivo. Tente novamente ou verifique o tamanho do backup.'); }
         if (!response.ok) throw new Error(result.error?.message || result.message || 'Não foi possível ler o arquivo.');
         songs = result.data;
         const duplicates = songs.filter(song => song.alreadyImported).length;
