@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const music = await API.get('/music');
     const byId = new Map(music.map(item => [String(item.id), item]));
     table.querySelectorAll('.del[data-id]').forEach(removeButton => {
-      if (removeButton.parentElement.querySelector('.music-search-links')) return;
+      const actions = removeButton.parentElement;
+      actions.querySelectorAll('a[href*="letras.mus.br"],a[href*="cifraclub.com.br"]').forEach(link => { if (!link.closest('.music-search-links')) link.remove(); });
+      if (actions.querySelector('.music-search-links')) return;
       const item = byId.get(removeButton.dataset.id);
       if (!item) return;
       const terms = encodeURIComponent(`${item.title} ${item.artist_name || ''}`.trim());
