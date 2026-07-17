@@ -35,6 +35,7 @@ const musicSelect = `
     music.cifra_url,
     music.notes,
     music.active,
+    (SELECT MAX(history.performed_at) FROM music_history history WHERE history.music_id = music.id AND history.church_id = music.church_id) AS last_performed,
     music.created_at,
     music.updated_at
   FROM music
