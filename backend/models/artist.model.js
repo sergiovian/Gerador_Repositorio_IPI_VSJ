@@ -1,4 +1,5 @@
 const { getDatabase } = require('../database/database');
+const { getCurrentChurchId } = require('../constants/church-context');
 
 function run(sql, parameters = []) {
   return new Promise((resolve, reject) => {
@@ -28,25 +29,25 @@ function all(sql, parameters = []) {
 }
 
 function findAll() {
-  return all('SELECT id, name, created_at, updated_at FROM artists ORDER BY name COLLATE NOCASE ASC');
+  return all('SELECT id, name, created_at, updated_at FROM artists WHERE church_id=? ORDER BY name COLLATE NOCASE ASC', [getCurrentChurchId()]);
 }
 
 function findById(id) {
-  return get('SELECT id, name, created_at, updated_at FROM artists WHERE id = ?', [id]);
+  return get('SELECT id, name, created_at, updated_at FROM artists WHERE id = ? AND church_id=?', [id, getCurrentChurchId()]);
 }
 
 async function create({ name }) {
-  const result = await run('INSERT INTO artists (name) VALUES (?)', [name]);
+  const result = await run('INSERT INTO artists (church_id,name) VALUES (?,?)', [getCurrentChurchId(), name]);
   return findById(result.id);
 }
 
 async function update(id, { name }) {
-  const result = await run('UPDATE artists SET name = ? WHERE id = ?', [name, id]);
+  const result = await run('UPDATE artists SET name = ? WHERE id = ? AND church_id=?', [name, id, getCurrentChurchId()]);
   return result.changes;
 }
 
 async function remove(id) {
-  const result = await run('DELETE FROM artists WHERE id = ?', [id]);
+  const result = await run('DELETE FROM artists WHERE id = ? AND church_id=?', [id, getCurrentChurchId()]);
   return result.changes;
 }
 

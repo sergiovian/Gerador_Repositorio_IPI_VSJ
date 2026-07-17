@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
-const crypto = require('crypto');
+const Auth = require('./backend/services/auth.service');
+const { runChurchContext } = require('./backend/constants/church-context');
 const artistRoutes = require('./backend/routes/artist.routes');
 const musicRoutes = require('./backend/routes/music.routes');
 const mvpRoutes = require('./backend/routes/mvp.routes');
@@ -8,22 +9,24 @@ const { errorHandler, notFoundHandler } = require('./backend/middlewares/error.m
 
 const app = express();
 const frontendPath = path.join(__dirname, 'frontend');
-const accessPassword = process.env.SITE_PASSWORD || '852456';
 const sessionSecret = process.env.SESSION_SECRET || 'troque-esta-chave-em-producao';
-const token = () => crypto.createHmac('sha256', sessionSecret).update('louvor-acesso').digest('hex');
-const hasAccess = req => (req.headers.cookie || '').split(';').some(item => item.trim() === `louvor_access=${token()}`);
+const crypto = require('crypto');
+const sessionToken = user => crypto.createHmac('sha256', sessionSecret).update(JSON.stringify(user)).digest('hex')+'.'+Buffer.from(JSON.stringify(user)).toString('base64url');
+const sessionUser = req => { const value=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('louvor_session='))?.slice(15); if(!value)return null; const [sig,data]=value.split('.'); const raw=Buffer.from(data||'','base64url').toString(); return sig===crypto.createHmac('sha256',sessionSecret).update(raw).digest('hex')?JSON.parse(raw):null; };
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.get('/login', (req, res) => res.sendFile(path.join(frontendPath, 'login.html')));
-app.post('/api/auth/login', (req, res) => {
-  const password = String(req.body.password || '');
-  if (password.length !== accessPassword.length || !crypto.timingSafeEqual(Buffer.from(password), Buffer.from(accessPassword))) return res.status(401).json({ message: 'Senha incorreta.' });
-  res.setHeader('Set-Cookie', `louvor_access=${token()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=43200`);
-  return res.json({ data: { authenticated: true } });
+app.post('/api/auth/user-login', async (req,res,next)=>{try{const user=await Auth.login(req.body.username,req.body.password);res.setHeader('Set-Cookie',`louvor_session=${sessionToken(user)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=43200`);res.json({data:user});}catch(error){next(error)}});
+app.post('/api/auth/register', async (req,res,next)=>{try{const user=await Auth.register(req.body);res.setHeader('Set-Cookie',`louvor_session=${sessionToken(user)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=43200`);res.status(201).json({data:user});}catch(error){next(error)}});
+app.post('/api/auth/logout', (req, res) => {
+  res.setHeader('Set-Cookie', 'louvor_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
+  res.status(204).send();
 });
+app.get('/login', (req, res) => res.sendFile(path.join(frontendPath, 'login.html')));
 app.use((req, res, next) => {
-  if (req.path === '/login' || req.path.startsWith('/assets/') || hasAccess(req)) return next();
+  const user = sessionUser(req);
+  if (user) return runChurchContext(user.churchId, next);
+  if (req.path === '/login' || req.path.startsWith('/assets/') || req.path === '/api/auth/user-login' || req.path === '/api/auth/register') return next();
   if (req.path.startsWith('/api/')) return res.status(401).json({ message: 'Acesso não autorizado.' });
   return res.redirect('/login');
 });

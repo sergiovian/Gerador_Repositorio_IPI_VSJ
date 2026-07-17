@@ -61,6 +61,11 @@ async function initializeDatabase() {
       const musicColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(music)', (error, rows) => error ? reject(error) : resolve(rows)));
       const musicMigrations = [['hymn_number', 'INTEGER'], ['source', 'TEXT'], ['congregation_score', 'INTEGER'], ['recommended_opening', 'INTEGER'], ['recommended_offertory', 'INTEGER'], ['recommended_communion', 'INTEGER'], ['recommended_preaching', 'INTEGER'], ['recommended_closing', 'INTEGER'], ['preferred_service_types', 'TEXT'], ['difficulty_band', 'INTEGER'], ['difficulty_vocal', 'INTEGER']];
       for (const [name, definition] of musicMigrations) if (!musicColumns.some((column) => column.name === name)) await executeSql(`ALTER TABLE music ADD COLUMN ${name} ${definition}`, `a migração do campo music.${name}`);
+      const userColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(users)', (error, rows) => error ? reject(error) : resolve(rows)));
+      if (!userColumns.some((column) => column.name === 'username')) await executeSql('ALTER TABLE users ADD COLUMN username TEXT', 'a migração de login');
+      await executeSql('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)', 'o índice de login');
+      const artistColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(artists)', (error, rows) => error ? reject(error) : resolve(rows)));
+      if (!artistColumns.some((column) => column.name === 'church_id')) await executeSql('ALTER TABLE artists ADD COLUMN church_id INTEGER NOT NULL DEFAULT 1', 'artist church migration');
       await executeSql(seed, 'os dados iniciais do banco de dados');
 
       console.log(`Banco de dados inicializado em: ${databasePath}`);
