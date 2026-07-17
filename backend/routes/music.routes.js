@@ -5,6 +5,7 @@ const asyncHandler = require('../utils/async-handler');
 const router = express.Router();
 
 router.get('/', asyncHandler(MusicController.list));
+router.get('/activity', asyncHandler(MusicController.activity));
 router.get('/:id', asyncHandler(MusicController.getById));
 router.post('/', asyncHandler(MusicController.create));
 router.put('/:id', asyncHandler(MusicController.update));

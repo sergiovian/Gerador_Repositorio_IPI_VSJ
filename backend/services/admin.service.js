@@ -17,4 +17,7 @@ async function setChurchActive(id, active) {
   return db.get('SELECT id,name,active FROM churches WHERE id=?', [churchId]);
 }
 
-module.exports = { listChurches, setChurchActive };
+async function notifications() { return db.all('SELECT * FROM admin_notifications ORDER BY created_at DESC LIMIT 20'); }
+async function readNotifications() { await db.run('UPDATE admin_notifications SET read_at=CURRENT_TIMESTAMP WHERE read_at IS NULL'); }
+
+module.exports = { listChurches, notifications, readNotifications, setChurchActive };

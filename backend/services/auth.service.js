@@ -10,6 +10,7 @@ async function register({ churchName, responsibleName, email, username, password
     const church = await db.run('INSERT INTO churches(name) VALUES(?)', [churchName.trim()]);
     const user = await db.run('INSERT INTO users(church_id,name,email,username,password_hash,role) VALUES(?,?,?,?,?,?)', [church.id, responsibleName.trim(), email.trim().toLowerCase(), username.trim().toLowerCase(), await hash(password), 'ADMIN']);
     await db.run('INSERT INTO church_preferences(church_id) VALUES(?)', [church.id]);
+    await db.run('INSERT INTO admin_notifications(message) VALUES(?)', [`Nova igreja cadastrada: ${churchName.trim()}`]);
     return { churchId: church.id, userId: user.id, username: username.trim().toLowerCase() };
   });
 }

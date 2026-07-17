@@ -1,6 +1,9 @@
 const MusicModel = require('../models/music.model');
 const AppError = require('../utils/app-error');
 const { getCurrentChurchId } = require('../constants/church-context');
+const db = require('../models/db.model');
+
+const logActivity = (title, action) => db.run('INSERT INTO music_activity_logs(church_id,music_title,action) VALUES(?,?,?)', [getCurrentChurchId(), title, action]);
 
 async function listMusic() {
   const items = await MusicModel.findAllByChurchId(getCurrentChurchId());
@@ -18,6 +21,7 @@ async function createMusic(musicData) {
   try {
     const music = await MusicModel.create({ ...musicData, churchId: getCurrentChurchId() });
     await MusicModel.replaceTags(music.id, musicData.tagIds);
+    await logActivity(music.title, 'ADDED');
     return getMusicById(music.id);
   } catch (error) {
     if (error.code === 'SQLITE_CONSTRAINT') {
@@ -28,10 +32,11 @@ async function createMusic(musicData) {
 }
 
 async function updateMusic(id, musicData) {
-  await getMusicById(id);
+  const previous = await getMusicById(id);
   try {
     await MusicModel.update(id, { ...musicData, churchId: getCurrentChurchId() });
     await MusicModel.replaceTags(id, musicData.tagIds);
+    await logActivity(musicData.title || previous.title, 'UPDATED');
     return getMusicById(id);
   } catch (error) {
     if (error.code === 'SQLITE_CONSTRAINT') {
@@ -42,9 +47,10 @@ async function updateMusic(id, musicData) {
 }
 
 async function deleteMusic(id) {
-  await getMusicById(id);
+  const music = await getMusicById(id);
   try {
     await MusicModel.remove(id, getCurrentChurchId());
+    await logActivity(music.title, 'REMOVED');
   } catch (error) {
     if (error.code === 'SQLITE_CONSTRAINT') {
       throw new AppError('A música não pode ser removida porque possui histórico vinculado.', 409);
@@ -53,4 +59,5 @@ async function deleteMusic(id) {
   }
 }
 
-module.exports = { createMusic, deleteMusic, getMusicById, listMusic, updateMusic };
+async function listActivity() { return db.all('SELECT * FROM music_activity_logs WHERE church_id=? ORDER BY created_at DESC LIMIT 10', [getCurrentChurchId()]); }
+module.exports = { createMusic, deleteMusic, getMusicById, listActivity, listMusic, updateMusic };

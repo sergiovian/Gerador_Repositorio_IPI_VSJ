@@ -5,6 +5,7 @@ async function list(req, res) {
   const music = await MusicService.listMusic();
   res.status(200).json({ data: music });
 }
+async function activity(req, res) { res.status(200).json({ data: await MusicService.listActivity() }); }
 
 async function getById(req, res) {
   const musicId = validateMusicId(req.params.id);
@@ -31,4 +32,4 @@ async function remove(req, res) {
   res.status(204).send();
 }
 
-module.exports = { create, getById, list, remove, update };
+module.exports = { activity, create, getById, list, remove, update };
