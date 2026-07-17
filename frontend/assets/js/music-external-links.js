@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const item = byId.get(removeButton.dataset.id);
       if (!item) return;
       const terms = encodeURIComponent(`${item.title} ${item.artist_name || ''}`.trim());
-      removeButton.insertAdjacentHTML('beforebegin', `<span class="music-search-links"><a class="btn btn-sm btn-outline-primary me-1" href="https://www.letras.mus.br/?q=${terms}" target="_blank" rel="noopener">Letra</a><a class="btn btn-sm btn-outline-success me-1" href="https://www.cifraclub.com.br/?q=${terms}" target="_blank" rel="noopener">Cifra</a></span>`);
+      removeButton.insertAdjacentHTML('beforebegin', `<span class="music-search-links"><a class="btn btn-sm btn-outline-primary me-1" href="https://www.letras.mus.br/?q=${terms}" target="_blank" rel="noopener"><i class="bi bi-card-text me-1"></i>Letra</a><a class="btn btn-sm btn-outline-success me-1" href="https://www.cifraclub.com.br/?q=${terms}" target="_blank" rel="noopener"><i class="bi bi-music-note-list me-1"></i>Cifra</a></span>`);
     });
   };
   new MutationObserver(() => addLinks().catch(() => {})).observe(document.body, { childList: true, subtree: true });
