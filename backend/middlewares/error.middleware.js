@@ -1,4 +1,3 @@
-/** Resposta JSON única para erros conhecidos e inesperados da API. */
 const AppError = require('../utils/app-error');
 
 function notFoundHandler(req, res) {

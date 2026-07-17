@@ -1,4 +1,3 @@
-/** Regras de negócio do módulo Artists. */
 const ArtistModel = require('../models/artist.model');
 const AppError = require('../utils/app-error');
 

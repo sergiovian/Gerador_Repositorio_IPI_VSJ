@@ -1,7 +1,3 @@
-/**
- * Orquestra Music no contexto único da versão 1.0.
- * O payload já é validado e o Service atribui a igreja antes de persistir.
- */
 const MusicModel = require('../models/music.model');
 const AppError = require('../utils/app-error');
 const { CURRENT_CHURCH_ID } = require('../constants/church-context');

@@ -1,7 +1,3 @@
-/**
- * Ponto de entrada da aplicação.
- * O servidor só aceita conexões depois que o banco estiver pronto.
- */
 require('dotenv').config();
 
 const app = require('./app');

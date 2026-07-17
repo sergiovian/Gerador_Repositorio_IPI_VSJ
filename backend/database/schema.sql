@@ -1,6 +1,3 @@
--- LOUVOR INTELIGENTE
--- Schema SQLite da versão 1.0.
--- Todas as chaves estrangeiras dependem de PRAGMA foreign_keys = ON na conexão.
 
 CREATE TABLE IF NOT EXISTS churches (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -196,8 +193,6 @@ CREATE TABLE IF NOT EXISTS repertoire_items (
   UNIQUE (repertoire_id, music_id),
   UNIQUE (repertoire_id, position)
 );
-
--- Índices alinhados aos filtros do catálogo e do algoritmo de repertório.
 CREATE INDEX IF NOT EXISTS idx_users_church_id ON users (church_id);
 CREATE INDEX IF NOT EXISTS idx_music_church_active_type ON music (church_id, active, type);
 CREATE INDEX IF NOT EXISTS idx_music_artist_id ON music (artist_id);
@@ -210,8 +205,6 @@ CREATE INDEX IF NOT EXISTS idx_decision_logs_music_id ON decision_logs (music_id
 CREATE INDEX IF NOT EXISTS idx_decision_logs_church_created_at ON decision_logs (church_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_repertoires_church_status ON repertoires (church_id, status);
 CREATE INDEX IF NOT EXISTS idx_repertoire_items_repertoire ON repertoire_items (repertoire_id, position);
-
--- Mantém a data de atualização sincronizada sem exigir que cada consulta a informe.
 CREATE TRIGGER IF NOT EXISTS trg_churches_updated_at
 AFTER UPDATE ON churches FOR EACH ROW WHEN NEW.updated_at = OLD.updated_at
 BEGIN

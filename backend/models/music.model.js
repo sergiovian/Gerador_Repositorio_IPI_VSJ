@@ -1,7 +1,3 @@
-/**
- * Camada de persistência de Music com SQL puro.
- * O churchId é recebido do Service, nunca do contrato HTTP na versão 1.0.
- */
 const { getDatabase } = require('../database/database');
 
 function run(sql, parameters = []) {

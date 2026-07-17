@@ -1,4 +1,3 @@
-/** Fases litúrgicas iniciais aprovadas para o futuro Motor de Decisão. */
 const LITURGICAL_PHASES = Object.freeze({
   ABERTURA: 'ABERTURA',
   ADORACAO: 'ADORACAO',

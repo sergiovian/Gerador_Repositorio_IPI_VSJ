@@ -1,4 +1,3 @@
-/* Importação oficial idempotente: IPI Vila São José / histórico do YouTube. */
 const { databaseReady, getDatabase } = require('./database');
 const db = require('../models/db.model');
 

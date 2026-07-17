@@ -1,4 +1,3 @@
-/** Adaptadores HTTP do módulo Artists; regras ficam no ArtistService. */
 const ArtistService = require('../services/artist.service');
 const { validateArtistId, validateArtistPayload } = require('../validators/artist.validator');
 

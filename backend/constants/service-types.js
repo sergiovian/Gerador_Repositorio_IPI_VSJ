@@ -1,4 +1,3 @@
-/** Tipos litúrgicos iniciais disponíveis para um culto. */
 const SERVICE_TYPES = Object.freeze([
   'Culto Normal',
   'Santa Ceia',

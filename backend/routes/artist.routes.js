@@ -1,4 +1,3 @@
-/** Rotas REST do recurso Artists. */
 const express = require('express');
 const ArtistController = require('../controllers/artist.controller');
 const asyncHandler = require('../utils/async-handler');

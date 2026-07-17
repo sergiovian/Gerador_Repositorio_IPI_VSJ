@@ -1,6 +1,3 @@
--- Dados iniciais e idempotentes da aplicação.
-
--- Igreja única atendida pela versão 1.0.
 INSERT OR IGNORE INTO churches (id, name, city, state) VALUES
   (1, 'Igreja Presbiteriana Independente de Vila São José', 'Osasco', 'SP');
 

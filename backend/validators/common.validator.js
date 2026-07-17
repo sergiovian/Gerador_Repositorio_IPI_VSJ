@@ -1,4 +1,3 @@
-/** Funções reutilizáveis de validação e normalização de entrada HTTP. */
 const AppError = require('../utils/app-error');
 
 function requiredString(value, field) {

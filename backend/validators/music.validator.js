@@ -1,4 +1,3 @@
-/** Validação e normalização específicas do recurso Music. */
 const ENERGY = require('../constants/energy');
 const MUSIC_TYPES = require('../constants/music-types');
 const {

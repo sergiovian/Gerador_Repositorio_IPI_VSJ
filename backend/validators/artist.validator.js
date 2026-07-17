@@ -1,4 +1,3 @@
-/** Validação e normalização específicas do recurso Artist. */
 const { positiveInteger, requiredString } = require('./common.validator');
 
 function validateArtistId(id) {

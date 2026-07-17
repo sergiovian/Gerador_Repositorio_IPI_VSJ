@@ -1,10 +1,3 @@
-/**
- * Inicialização centralizada do SQLite.
- *
- * Ao importar este módulo, o diretório do banco é criado, as chaves
- * estrangeiras são habilitadas e os arquivos schema.sql e seed.sql são
- * executados uma única vez para a instância atual do processo.
- */
 const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
@@ -19,7 +12,6 @@ const seedPath = path.join(__dirname, 'seed.sql');
 let database;
 let initializationPromise;
 
-/** Executa uma instrução SQL e a converte para Promise. */
 function executeSql(sql, context) {
   return new Promise((resolve, reject) => {
     database.exec(sql, (error) => {
@@ -33,7 +25,6 @@ function executeSql(sql, context) {
   });
 }
 
-/** Abre o arquivo SQLite e garante que o diretório de destino exista. */
 function openDatabase() {
   return new Promise((resolve, reject) => {
     fs.mkdirSync(path.dirname(databasePath), { recursive: true });
@@ -49,10 +40,6 @@ function openDatabase() {
   });
 }
 
-/**
- * Cria a estrutura e a carga inicial de forma idempotente.
- * Chamadas concorrentes reutilizam a mesma Promise de inicialização.
- */
 async function initializeDatabase() {
   if (initializationPromise) {
     return initializationPromise;
@@ -67,7 +54,6 @@ async function initializeDatabase() {
       const seed = fs.readFileSync(seedPath, 'utf8');
 
       await executeSql(schema, 'o schema do banco de dados');
-      // Migração aditiva para bancos criados antes do campo de origem do histórico.
       const columns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(music_history)', (error, rows) => error ? reject(error) : resolve(rows)));
       if (!columns.some((column) => column.name === 'origin')) {
         await executeSql("ALTER TABLE music_history ADD COLUMN origin TEXT NOT NULL DEFAULT 'MANUAL'", 'a migração do histórico');
@@ -95,7 +81,6 @@ async function initializeDatabase() {
   return initializationPromise;
 }
 
-/** Retorna a conexão após a inicialização ter sido concluída. */
 function getDatabase() {
   if (!database) {
     throw new Error('Banco de dados ainda não foi inicializado. Aguarde databaseReady.');
@@ -103,8 +88,6 @@ function getDatabase() {
 
   return database;
 }
-
-// A inicialização começa automaticamente assim que este módulo é carregado.
 const databaseReady = initializeDatabase();
 
 module.exports = {

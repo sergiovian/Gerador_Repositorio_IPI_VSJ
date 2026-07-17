@@ -1,4 +1,3 @@
-/** Camada de persistência de artistas com SQL puro. */
 const { getDatabase } = require('../database/database');
 
 function run(sql, parameters = []) {

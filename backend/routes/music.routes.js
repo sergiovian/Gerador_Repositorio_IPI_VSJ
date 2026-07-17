@@ -1,4 +1,3 @@
-/** Rotas REST do recurso Music. */
 const express = require('express');
 const MusicController = require('../controllers/music.controller');
 const asyncHandler = require('../utils/async-handler');

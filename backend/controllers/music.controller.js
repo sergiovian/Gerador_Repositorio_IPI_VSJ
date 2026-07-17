@@ -1,4 +1,3 @@
-/** Controller HTTP: aplica validators antes de delegar ao serviço. */
 const MusicService = require('../services/music.service');
 const { validateMusicId, validateMusicPayload } = require('../validators/music.validator');
 
