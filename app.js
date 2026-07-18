@@ -32,7 +32,7 @@ app.use((req, res, next) => {
   if (user) { req.user = user; return runChurchContext(user.churchId, next); }
   if (req.path === '/login' || req.path.startsWith('/assets/') || req.path === '/api/auth/user-login' || req.path === '/api/auth/register') return next();
   if (req.path.startsWith('/api/')) return res.status(401).json({ message: 'Acesso não autorizado.' });
-  return res.redirect('/login');
+  return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
 });
 app.use(express.static(frontendPath));
 app.use('/api/artists', artistRoutes);
