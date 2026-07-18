@@ -37,4 +37,18 @@ async function replaceItems(repertoireId, items) {
   return { id, changed: true };
 }
 
-module.exports = { replaceItems };
+async function reopen(repertoireId) {
+  const churchId = getCurrentChurchId();
+  const id = validId(repertoireId);
+  const repertoire = await db.get('SELECT * FROM repertoires WHERE id=? AND church_id=?', [id, churchId]);
+  if (!repertoire) throw new AppError('Repertório não encontrado.', 404);
+  if (repertoire.status !== 'EXECUTED') throw new AppError('Somente repertórios executados precisam ser reabertos.', 409);
+  await db.transaction(async () => {
+    await db.run("DELETE FROM music_history WHERE church_id=? AND service_id=? AND origin='AUTOMATIC'", [churchId, repertoire.service_id]);
+    await db.run("UPDATE repertoires SET status='DRAFT' WHERE id=?", [id]);
+    await db.run("UPDATE services SET status='PLANNED' WHERE id=? AND church_id=?", [repertoire.service_id, churchId]);
+  });
+  return { id, reopened: true };
+}
+
+module.exports = { replaceItems, reopen };
