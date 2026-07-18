@@ -68,6 +68,7 @@ async function initializeDatabase() {
       if (!artistColumns.some((column) => column.name === 'church_id')) await executeSql('ALTER TABLE artists ADD COLUMN church_id INTEGER NOT NULL DEFAULT 1', 'artist church migration');
       const lyricColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(music)', (error, rows) => error ? reject(error) : resolve(rows)));
       if (!lyricColumns.some((column) => column.name === 'lyrics_url')) await executeSql('ALTER TABLE music ADD COLUMN lyrics_url TEXT', 'lyrics link migration');
+      await executeSql('CREATE TABLE IF NOT EXISTS projection_states (repertoire_id INTEGER PRIMARY KEY, current_position INTEGER NOT NULL DEFAULT 1, blackout INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(repertoire_id) REFERENCES repertoires(id) ON DELETE CASCADE)', 'a tabela de projeção');
       await executeSql(seed, 'os dados iniciais do banco de dados');
 
       console.log(`Banco de dados inicializado em: ${databasePath}`);
