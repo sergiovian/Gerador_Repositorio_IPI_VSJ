@@ -7,6 +7,7 @@ const musicRoutes = require('./backend/routes/music.routes');
 const mvpRoutes = require('./backend/routes/mvp.routes');
 const adminRoutes = require('./backend/routes/admin.routes');
 const youtubeRoutes = require('./backend/routes/youtube.routes');
+const repertoireEditRoutes = require('./backend/routes/repertoire-edit.routes');
 const { errorHandler, notFoundHandler } = require('./backend/middlewares/error.middleware');
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/artists', artistRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/youtube', youtubeRoutes);
+app.use('/api/repertoires', repertoireEditRoutes);
 app.use('/api', mvpRoutes);
 
 app.get('/', (req, res) => {
