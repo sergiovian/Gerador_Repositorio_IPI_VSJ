@@ -51,4 +51,21 @@ async function reopen(repertoireId) {
   return { id, reopened: true };
 }
 
-module.exports = { replaceItems, reopen };
+async function saveLiturgy(repertoireId, pages) {
+  const churchId = getCurrentChurchId(), id = validId(repertoireId);
+  if (!Array.isArray(pages) || !pages.length) throw new AppError('Informe ao menos uma página da liturgia.', 400);
+  if (pages.length > 300) throw new AppError('A liturgia pode ter no máximo 300 páginas.', 400);
+  const normalized = pages.map((page, index) => {
+    const content = String(page?.content || '').replace(/\r\n/g, '\n').trim();
+    if (!content) throw new AppError(`A página ${index + 1} está vazia.`, 400);
+    if (content.length > 12000) throw new AppError(`A página ${index + 1} é muito extensa.`, 400);
+    return { position: index + 1, title: String(page?.title || content.split('\n')[0]).trim().slice(0, 100), content };
+  });
+  const repertoire = await db.get('SELECT id,status FROM repertoires WHERE id=? AND church_id=?', [id, churchId]);
+  if (!repertoire) throw new AppError('Culto não encontrado.', 404);
+  if (!['DRAFT', 'CONFIRMED'].includes(repertoire.status)) throw new AppError('Reabra o culto antes de alterar a liturgia.', 409);
+  await db.run('UPDATE repertoires SET liturgy_json=? WHERE id=? AND church_id=?', [JSON.stringify(normalized), id, churchId]);
+  return { id, pages: normalized };
+}
+
+module.exports = { replaceItems, saveLiturgy, reopen };

@@ -71,6 +71,8 @@ async function initializeDatabase() {
       await executeSql('CREATE TABLE IF NOT EXISTS projection_states (repertoire_id INTEGER PRIMARY KEY, current_position INTEGER NOT NULL DEFAULT 1, blackout INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(repertoire_id) REFERENCES repertoires(id) ON DELETE CASCADE)', 'a tabela de projeção');
       const projectionColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(projection_states)', (error, rows) => error ? reject(error) : resolve(rows)));
       if (!projectionColumns.some((column) => column.name === 'slide_index')) await executeSql('ALTER TABLE projection_states ADD COLUMN slide_index INTEGER NOT NULL DEFAULT 0', 'a paginação da projeção');
+      const repertoireColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(repertoires)', (error, rows) => error ? reject(error) : resolve(rows)));
+      if (!repertoireColumns.some((column) => column.name === 'liturgy_json')) await executeSql("ALTER TABLE repertoires ADD COLUMN liturgy_json TEXT NOT NULL DEFAULT '[]'", 'a liturgia do culto');
       await executeSql(seed, 'os dados iniciais do banco de dados');
 
       console.log(`Banco de dados inicializado em: ${databasePath}`);
