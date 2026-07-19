@@ -1,1 +1,10 @@
-if(document.documentElement.dataset.page==='music'){const id=Number(new URLSearchParams(location.search).get('edit'));if(id)new MutationObserver(()=>{const button=document.querySelector(`.edit-music[data-id="${id}"]`);if(!button||button.dataset.opened)return;button.dataset.opened='1';button.click()}).observe(document.documentElement,{childList:true,subtree:true});}
+if (document.documentElement.dataset.page === 'music') {
+  const id = Number(new URLSearchParams(location.search).get('edit'));
+  if (id) new MutationObserver(() => {
+    const button = document.querySelector(`.edit-music[data-id="${id}"]`);
+    if (!button || button.dataset.opened) return;
+    button.dataset.opened = '1';
+    button.classList.replace('edit-music', 'edit-music-tags');
+    button.click();
+  }).observe(document.documentElement, { childList: true, subtree: true });
+}
