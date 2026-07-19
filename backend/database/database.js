@@ -73,6 +73,7 @@ async function initializeDatabase() {
       if (!projectionColumns.some((column) => column.name === 'slide_index')) await executeSql('ALTER TABLE projection_states ADD COLUMN slide_index INTEGER NOT NULL DEFAULT 0', 'a paginação da projeção');
       const repertoireColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(repertoires)', (error, rows) => error ? reject(error) : resolve(rows)));
       if (!repertoireColumns.some((column) => column.name === 'liturgy_json')) await executeSql("ALTER TABLE repertoires ADD COLUMN liturgy_json TEXT NOT NULL DEFAULT '[]'", 'a liturgia do culto');
+      if (!repertoireColumns.some((column) => column.name === 'presentation_file')) await executeSql('ALTER TABLE repertoires ADD COLUMN presentation_file TEXT', 'o anexo da apresentação');
       await executeSql(seed, 'os dados iniciais do banco de dados');
 
       console.log(`Banco de dados inicializado em: ${databasePath}`);

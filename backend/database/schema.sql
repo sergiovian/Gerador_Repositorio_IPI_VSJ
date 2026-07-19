@@ -192,6 +192,7 @@ CREATE TABLE IF NOT EXISTS repertoires (
   quality_score INTEGER NOT NULL DEFAULT 0,
   generation_context_json TEXT NOT NULL DEFAULT '{}',
   liturgy_json TEXT NOT NULL DEFAULT '[]',
+  presentation_file TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (church_id) REFERENCES churches (id) ON DELETE RESTRICT,

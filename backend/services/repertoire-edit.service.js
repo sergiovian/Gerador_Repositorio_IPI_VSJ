@@ -1,6 +1,9 @@
 const db = require('../models/db.model');
 const AppError = require('../utils/app-error');
 const { getCurrentChurchId } = require('../constants/church-context');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 
 const validId = value => {
   const id = Number(value);
@@ -68,4 +71,29 @@ async function saveLiturgy(repertoireId, pages) {
   return { id, pages: normalized };
 }
 
-module.exports = { replaceItems, saveLiturgy, reopen };
+async function savePresentation(repertoireId, file) {
+  const churchId = getCurrentChurchId(), id = validId(repertoireId);
+  if (!file) throw new AppError('Selecione a apresentação PowerPoint.', 400);
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  if (!['.ppt', '.pptx'].includes(ext)) throw new AppError('Envie um arquivo PowerPoint (.ppt ou .pptx).', 400);
+  const repertoire = await db.get('SELECT id,presentation_file FROM repertoires WHERE id=? AND church_id=?', [id, churchId]);
+  if (!repertoire) throw new AppError('Culto não encontrado.', 404);
+  const dir = path.resolve(process.cwd(), 'backend/uploads/presentations');
+  fs.mkdirSync(dir, { recursive: true });
+  const stored = `${id}-${crypto.randomUUID()}${ext}`, target = path.join(dir, stored);
+  fs.writeFileSync(target, file.buffer);
+  if (repertoire.presentation_file) { const old = path.join(dir, path.basename(repertoire.presentation_file)); if (fs.existsSync(old)) fs.unlinkSync(old); }
+  await db.run('UPDATE repertoires SET presentation_file=? WHERE id=? AND church_id=?', [stored, id, churchId]);
+  return { id, fileName: file.originalname, downloadUrl: `/api/repertoires/${id}/presentation` };
+}
+
+async function getPresentation(repertoireId) {
+  const churchId = getCurrentChurchId(), id = validId(repertoireId);
+  const repertoire = await db.get('SELECT presentation_file FROM repertoires WHERE id=? AND church_id=?', [id, churchId]);
+  if (!repertoire?.presentation_file) throw new AppError('Não há apresentação anexada a este culto.', 404);
+  const stored = path.basename(repertoire.presentation_file), filePath = path.resolve(process.cwd(), 'backend/uploads/presentations', stored);
+  if (!fs.existsSync(filePath)) throw new AppError('O arquivo da apresentação não foi encontrado.', 404);
+  return { path: filePath, name: stored.replace(/^\d+-[\w-]+/, 'apresentacao') };
+}
+
+module.exports = { replaceItems, saveLiturgy, savePresentation, getPresentation, reopen };

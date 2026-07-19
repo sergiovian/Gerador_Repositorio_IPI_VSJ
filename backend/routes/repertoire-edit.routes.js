@@ -1,8 +1,12 @@
 const express = require('express');
+const multer = require('multer');
 const asyncHandler = require('../utils/async-handler');
 const Service = require('../services/repertoire-edit.service');
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 80 * 1024 * 1024 } });
 router.put('/:id/items', asyncHandler(async (req, res) => res.json({ data: await Service.replaceItems(req.params.id, Array.isArray(req.body) ? req.body : req.body.items) })));
 router.put('/:id/liturgy', asyncHandler(async (req, res) => res.json({ data: await Service.saveLiturgy(req.params.id, req.body.pages) })));
+router.put('/:id/presentation', upload.single('file'), asyncHandler(async (req, res) => res.json({ data: await Service.savePresentation(req.params.id, req.file) })));
+router.get('/:id/presentation', asyncHandler(async (req, res) => { const file = await Service.getPresentation(req.params.id); res.download(file.path, file.name); }));
 router.post('/:id/reopen', asyncHandler(async (req, res) => res.json({ data: await Service.reopen(req.params.id) })));
 module.exports = router;
