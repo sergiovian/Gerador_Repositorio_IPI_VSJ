@@ -11,18 +11,16 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="card panel p-4 p-lg-5">
       <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-4">
         <div><h2 class="h4 mb-1">Bíblia para projeção</h2><p class="text-muted mb-0">Escolha o texto em poucos cliques ou busque uma referência rapidamente.</p></div>
-        <span class="badge text-bg-light border">Almeida disponível</span>
+        <span class="badge text-bg-light border">João Ferreira de Almeida</span>
       </div>
       <div class="row g-4">
         <div class="col-lg-5 border-end-lg">
           <h3 class="h6 text-uppercase text-muted">Pesquisa rápida</h3>
           <form id="bible-quick-form" class="row g-2">
             <div class="col-12"><input id="quick-reference" class="form-control form-control-lg" placeholder="Ex.: João 3 16 ou João 3:16" autocomplete="off" required></div>
-            <div class="col-7"><select id="quick-translation" class="form-select"><option value="almeida">Português — Almeida</option><option value="kjv">English — King James</option><option value="rvr1960">Español — Reina Valera</option><option value="message">A Mensagem (licenciada)</option></select></div>
-            <div class="col-5 d-grid"><button class="btn btn-primary">Buscar</button></div>
+            <div class="col-12 d-grid"><button class="btn btn-primary">Buscar na Almeida</button></div>
           </form>
           <small class="text-muted d-block mt-2">A pontuação é opcional: <strong>Joao 3 16</strong> vira <strong>João 3:16</strong>.</small>
-          <div id="message-license" class="alert alert-warning small mt-3 mb-0 d-none">“A Mensagem” é uma tradução protegida por direitos autorais e não está disponível nesta fonte pública. Se a igreja tiver uma licença/API autorizada, ela poderá ser conectada aqui.</div>
         </div>
         <div class="col-lg-7">
           <h3 class="h6 text-uppercase text-muted">Escolha guiada</h3>
@@ -60,10 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return match ? `${match[1]} ${match[2]}:${match[3]}${match[4] ? `-${match[4]}` : ''}` : text;
   }
   async function search(reference, translation) {
-    if (translation === 'message') {
-      document.querySelector('#message-license').classList.remove('d-none');
-      return;
-    }
     const formatted = normalizeReference(reference);
     result.innerHTML = '<div class="text-muted py-3"><span class="spinner-border spinner-border-sm me-2"></span>Buscando texto bíblico…</div>';
     try {
@@ -80,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   document.querySelector('#bible-quick-form').onsubmit = event => {
     event.preventDefault();
-    search(document.querySelector('#quick-reference').value, document.querySelector('#quick-translation').value);
+    search(document.querySelector('#quick-reference').value, 'almeida');
   };
   document.querySelector('#bible-picker-form').onsubmit = event => {
     event.preventDefault();
