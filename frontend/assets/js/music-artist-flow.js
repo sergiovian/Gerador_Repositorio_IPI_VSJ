@@ -13,8 +13,7 @@ if (document.documentElement.dataset.page === 'music') new MutationObserver(() =
   const select = form.querySelector('[name="artist_id"]');
   if (!select) return;
   form.dataset.artistFlow = '1';
-  const names = [...select.options].filter(option => option.value).map(option => `<option value="${UI.esc(option.textContent)}"></option>`).join('');
-  select.closest('div').innerHTML = `<label class="form-label small fw-semibold">Artista</label><input class="form-control" name="artist_name" list="music-artist-list" placeholder="Digite o artista"><datalist id="music-artist-list">${names}</datalist><small class="text-secondary">Novo artista? Basta digitar o nome.</small>`;
+  select.closest('div').innerHTML = '<label class="form-label small fw-semibold">Artista</label><input class="form-control" name="artist_name" placeholder="Digite o artista"><small class="text-secondary">O artista será criado automaticamente, se necessário.</small>';
   form.onsubmit = async event => {
     event.preventDefault(); const values = Object.fromEntries(new FormData(form));
     try {
