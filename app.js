@@ -9,6 +9,7 @@ const adminRoutes = require('./backend/routes/admin.routes');
 const youtubeRoutes = require('./backend/routes/youtube.routes');
 const repertoireEditRoutes = require('./backend/routes/repertoire-edit.routes');
 const projectionRoutes = require('./backend/routes/projection.routes');
+const liturgyRoutes = require('./backend/routes/liturgy.routes');
 const { errorHandler, notFoundHandler } = require('./backend/middlewares/error.middleware');
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/youtube', youtubeRoutes);
 app.use('/api/repertoires', repertoireEditRoutes);
 app.use('/api/projection', projectionRoutes);
+app.use('/api/liturgy', liturgyRoutes);
 app.use('/api', mvpRoutes);
 
 app.get('/', (req, res) => {
