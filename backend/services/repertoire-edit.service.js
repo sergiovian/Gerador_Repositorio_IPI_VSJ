@@ -66,7 +66,6 @@ async function saveLiturgy(repertoireId, pages) {
   });
   const repertoire = await db.get('SELECT id,status FROM repertoires WHERE id=? AND church_id=?', [id, churchId]);
   if (!repertoire) throw new AppError('Culto não encontrado.', 404);
-  if (!['DRAFT', 'CONFIRMED'].includes(repertoire.status)) throw new AppError('Reabra o culto antes de alterar a liturgia.', 409);
   await db.run('UPDATE repertoires SET liturgy_json=? WHERE id=? AND church_id=?', [JSON.stringify(normalized), id, churchId]);
   return { id, pages: normalized };
 }
