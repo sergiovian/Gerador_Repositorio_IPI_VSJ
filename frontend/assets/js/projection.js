@@ -1,1 +1,28 @@
-(()=>{const root=document.getElementById('projection-root'),rid=new URLSearchParams(location.search).get('repertoire'),load=async path=>{const response=await fetch('/api'+path),json=await response.json();if(!response.ok)throw Error(json.error?.message||json.message||'Erro na projeção.');return json.data},slides=text=>String(text||'').split(/\n\s*\n+/).map(value=>value.trim()).filter(Boolean),esc=value=>String(value||'').replace(/[&<>]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[char]));let previous='';async function show(){try{const[repertoire,state]=await Promise.all([load('/repertoires/'+rid),load('/projection/'+rid+'/state')]);if(state.blackout){if(previous!=='blackout'){root.innerHTML='';previous='blackout'}return}let content='',counter='',kind=state.mode;if(state.mode==='LITURGY'){const page=repertoire.liturgy?.[state.liturgyIndex];content=page?.content||'Nenhuma página de liturgia selecionada.';counter=page?`${state.liturgyIndex+1} / ${repertoire.liturgy.length}`:''}else if(state.mode==='CHOICE'){content='A música terminou.\n\nEscolha no celular:\nOutra música ou voltar para a liturgia.';kind='choice'}else{const item=repertoire.items[state.position-1];if(!item)throw Error('Não há música nesta posição.');const music=await load('/music/'+item.music_id),parts=slides(music.lyrics);content=parts[Math.min(state.slide,Math.max(0,parts.length-1))]||'Letra não cadastrada.';counter=parts.length?`${Math.min(state.slide+1,parts.length)} / ${parts.length}`:''}const mark=`${kind}-${state.position}-${state.slide}-${state.liturgyIndex}-${content}`;if(mark===previous)return;previous=mark;root.innerHTML=`<div class="projection-content ${kind}"><pre>${esc(content)}</pre>${counter?`<small>${counter}</small>`:''}</div>`}catch(error){root.innerHTML=`<div><h1>Não foi possível abrir a projeção</h1><p>${esc(error.message)}</p></div>`}}show();setInterval(show,700)})();
+(() => {
+  const root = document.getElementById('projection-root');
+  const repertoireId = new URLSearchParams(location.search).get('repertoire');
+  const load = async path => { const response = await fetch('/api' + path), json = await response.json(); if (!response.ok) throw Error(json.error?.message || json.message || 'Erro na projeção.'); return json.data; };
+  const slides = text => String(text || '').split(/\n\s*\n+/).map(value => value.trim()).filter(Boolean);
+  const esc = value => String(value || '').replace(/[&<>]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[char]));
+  let previous = '';
+  async function show() {
+    try {
+      const [repertoire, state] = await Promise.all([load('/repertoires/' + repertoireId), load('/projection/' + repertoireId + '/state')]);
+      if (state.blackout) { if (previous !== 'blackout') { root.innerHTML = ''; previous = 'blackout'; } return; }
+      let content = '', counter = '', kind = state.mode, title = '';
+      if (state.mode === 'LITURGY') {
+        const page = repertoire.liturgy?.[state.liturgyIndex]; content = page?.content || 'Nenhuma página de liturgia selecionada.'; title = page?.title || ''; counter = page ? `${state.liturgyIndex + 1} / ${repertoire.liturgy.length}` : '';
+      } else if (state.mode === 'CHOICE') { content = 'A música terminou.\n\nEscolha no celular:\nOutra música ou voltar para a liturgia.'; kind = 'choice'; }
+      else {
+        const item = repertoire.items[state.position - 1]; if (!item) throw Error('Não há música nesta posição.');
+        const music = await load('/music/' + item.music_id), parts = slides(music.lyrics); content = parts[Math.min(state.slide, Math.max(0, parts.length - 1))] || 'Letra não cadastrada.'; title = item.title || ''; counter = parts.length ? `${Math.min(state.slide + 1, parts.length)} / ${parts.length}` : '';
+      }
+      const style = JSON.parse(localStorage.getItem('projection-style') || '{}');
+      const showTitle = state.mode === 'LITURGY' || style.showMusicTitle === true;
+      const mark = `${kind}-${state.position}-${state.slide}-${state.liturgyIndex}-${title}-${content}-${showTitle}`;
+      if (mark === previous) return; previous = mark;
+      root.innerHTML = `<div class="projection-content ${kind}">${showTitle && title ? `<h1>${esc(title)}</h1>` : ''}<pre>${esc(content)}</pre>${counter ? `<small>${counter}</small>` : ''}</div>`;
+    } catch (error) { root.innerHTML = `<div><h1>Não foi possível abrir a projeção</h1><p>${esc(error.message)}</p></div>`; }
+  }
+  show(); setInterval(show, 700);
+})();
