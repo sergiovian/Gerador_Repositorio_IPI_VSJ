@@ -59,6 +59,13 @@ async function saveLiturgy(repertoireId, pages) {
   if (!Array.isArray(pages) || !pages.length) throw new AppError('Informe ao menos uma página da liturgia.', 400);
   if (pages.length > 300) throw new AppError('A liturgia pode ter no máximo 300 páginas.', 400);
   const normalized = pages.map((page, index) => {
+    if (page?.type === 'media') {
+      const mediaUrl = String(page.mediaUrl || '');
+      if (!mediaUrl.startsWith(`/api/repertoires/${id}/media/`)) throw new AppError(`A mídia da página ${index + 1} é inválida.`, 400);
+      const mediaType = String(page.mediaType || '');
+      if (!['image', 'video'].includes(mediaType)) throw new AppError(`O tipo da mídia da página ${index + 1} é inválido.`, 400);
+      return { position: index + 1, type: 'media', mediaType, mediaUrl, title: String(page.title || 'Comunicado').trim().slice(0, 100), content: String(page.content || page.title || 'Comunicado').trim().slice(0, 12000) };
+    }
     const content = String(page?.content || '').replace(/\r\n/g, '\n').trim();
     if (!content) throw new AppError(`A página ${index + 1} está vazia.`, 400);
     if (content.length > 12000) throw new AppError(`A página ${index + 1} é muito extensa.`, 400);
@@ -68,6 +75,28 @@ async function saveLiturgy(repertoireId, pages) {
   if (!repertoire) throw new AppError('Culto não encontrado.', 404);
   await db.run('UPDATE repertoires SET liturgy_json=? WHERE id=? AND church_id=?', [JSON.stringify(normalized), id, churchId]);
   return { id, pages: normalized };
+}
+
+async function saveMedia(repertoireId, file) {
+  const churchId = getCurrentChurchId(), id = validId(repertoireId);
+  if (!file) throw new AppError('Selecione uma imagem ou vídeo.', 400);
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const image = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext), video = ['.mp4', '.webm', '.mov'].includes(ext);
+  if (!image && !video) throw new AppError('Envie imagem (JPG, PNG, WEBP, GIF) ou vídeo (MP4, WEBM, MOV).', 400);
+  const repertoire = await db.get('SELECT id FROM repertoires WHERE id=? AND church_id=?', [id, churchId]);
+  if (!repertoire) throw new AppError('Culto não encontrado.', 404);
+  const dir = path.resolve(process.cwd(), 'backend/uploads/notices'); fs.mkdirSync(dir, { recursive: true });
+  const stored = `${id}-${crypto.randomUUID()}${ext}`; fs.writeFileSync(path.join(dir, stored), file.buffer);
+  return { type: image ? 'image' : 'video', url: `/api/repertoires/${id}/media/${encodeURIComponent(stored)}`, name: file.originalname };
+}
+
+async function getMedia(repertoireId, fileName) {
+  const churchId = getCurrentChurchId(), id = validId(repertoireId), safe = path.basename(String(fileName || ''));
+  const repertoire = await db.get('SELECT id FROM repertoires WHERE id=? AND church_id=?', [id, churchId]);
+  if (!repertoire || !safe.startsWith(`${id}-`)) throw new AppError('Mídia não encontrada.', 404);
+  const filePath = path.resolve(process.cwd(), 'backend/uploads/notices', safe);
+  if (!fs.existsSync(filePath)) throw new AppError('Arquivo de mídia não encontrado.', 404);
+  return filePath;
 }
 
 async function savePresentation(repertoireId, file) {
@@ -95,4 +124,4 @@ async function getPresentation(repertoireId) {
   return { path: filePath, name: stored.replace(/^\d+-[\w-]+/, 'apresentacao') };
 }
 
-module.exports = { replaceItems, saveLiturgy, savePresentation, getPresentation, reopen };
+module.exports = { replaceItems, saveLiturgy, savePresentation, getPresentation, saveMedia, getMedia, reopen };

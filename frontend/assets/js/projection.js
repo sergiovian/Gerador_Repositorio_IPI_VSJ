@@ -11,7 +11,13 @@
       if (state.blackout) { if (previous !== 'blackout') { root.innerHTML = ''; previous = 'blackout'; } return; }
       let content = '', counter = '', kind = state.mode, title = '';
       if (state.mode === 'LITURGY') {
-        const page = repertoire.liturgy?.[state.liturgyIndex]; content = page?.content || 'Nenhuma página de liturgia selecionada.'; title = page?.title || ''; counter = page ? `${state.liturgyIndex + 1} / ${repertoire.liturgy.length}` : '';
+        const page = repertoire.liturgy?.[state.liturgyIndex];
+        if (page?.type === 'media' && page.mediaUrl) {
+          const media = page.mediaType === 'video' ? `<video class="projection-media" src="${esc(page.mediaUrl)}" controls autoplay playsinline></video>` : `<img class="projection-media" src="${esc(page.mediaUrl)}" alt="${esc(page.title || 'Comunicado')}">`;
+          root.innerHTML = `<div class="projection-content media">${page.title ? `<h1>${esc(page.title)}</h1>` : ''}${media}</div>`;
+          previous = `media-${state.liturgyIndex}-${page.mediaUrl}`; return;
+        }
+        content = page?.content || 'Nenhuma página de liturgia selecionada.'; title = page?.title || ''; counter = page ? `${state.liturgyIndex + 1} / ${repertoire.liturgy.length}` : '';
       } else if (state.mode === 'CHOICE') { content = 'A música terminou.\n\nEscolha no celular:\nOutra música ou voltar para a liturgia.'; kind = 'choice'; }
       else {
         const item = repertoire.items[state.position - 1]; if (!item) throw Error('Não há música nesta posição.');
