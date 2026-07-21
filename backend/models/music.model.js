@@ -30,6 +30,7 @@ const musicSelect = `
     music.bpm,
     music.duration,
     music.lyrics,
+    music.chords,
     music.lyrics_url,
     music.youtube_url,
     music.cifra_url,
@@ -71,12 +72,12 @@ async function replaceTags(id, tagIds) {
 async function create(music) {
   const result = await run(`
     INSERT INTO music (
-      church_id, title, artist_id, type, energy, "key", bpm, duration, lyrics,
+      church_id, title, artist_id, type, energy, "key", bpm, duration, lyrics, chords,
       youtube_url, cifra_url, notes, active
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     music.churchId, music.title, music.artistId, music.type, music.energy,
-    music.key, music.bpm, music.duration, music.lyrics, music.youtubeUrl, music.cifraUrl,
+    music.key, music.bpm, music.duration, music.lyrics, music.chords, music.youtubeUrl, music.cifraUrl,
     music.notes, music.active ? 1 : 0
   ]);
 
@@ -87,11 +88,11 @@ async function update(id, music) {
   const result = await run(`
     UPDATE music SET
       church_id = ?, title = ?, artist_id = ?, type = ?, energy = ?, "key" = ?,
-      bpm = ?, duration = ?, lyrics = ?, youtube_url = ?, cifra_url = ?, notes = ?, active = ?
+      bpm = ?, duration = ?, lyrics = ?, chords = ?, youtube_url = ?, cifra_url = ?, notes = ?, active = ?
     WHERE id = ? AND church_id = ?
   `, [
     music.churchId, music.title, music.artistId, music.type, music.energy,
-    music.key, music.bpm, music.duration, music.lyrics, music.youtubeUrl, music.cifraUrl,
+    music.key, music.bpm, music.duration, music.lyrics, music.chords, music.youtubeUrl, music.cifraUrl,
     music.notes, music.active ? 1 : 0, id, music.churchId
   ]);
 

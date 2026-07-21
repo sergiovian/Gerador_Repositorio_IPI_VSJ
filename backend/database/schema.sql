@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS music (
   difficulty_band INTEGER CHECK (difficulty_band IS NULL OR difficulty_band BETWEEN 1 AND 5),
   difficulty_vocal INTEGER CHECK (difficulty_vocal IS NULL OR difficulty_vocal BETWEEN 1 AND 5),
   lyrics TEXT,
+  chords TEXT,
   lyrics_url TEXT,
   youtube_url TEXT,
   cifra_url TEXT,

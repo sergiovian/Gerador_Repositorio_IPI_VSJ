@@ -26,6 +26,7 @@ function validateMusicPayload(payload) {
     bpm: positiveInteger(body.bpm, 'bpm'),
     duration: positiveInteger(body.duration, 'duration'),
     lyrics: optionalString(body.lyrics, 'lyrics'),
+    chords: optionalString(body.chords, 'chords'),
     youtubeUrl: optionalUrl(body.youtube_url, 'youtube_url'),
     cifraUrl: optionalUrl(body.cifra_url, 'cifra_url'),
     notes: optionalString(body.notes, 'notes'),

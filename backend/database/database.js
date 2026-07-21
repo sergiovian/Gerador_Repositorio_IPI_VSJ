@@ -59,7 +59,7 @@ async function initializeDatabase() {
         await executeSql("ALTER TABLE music_history ADD COLUMN origin TEXT NOT NULL DEFAULT 'MANUAL'", 'a migração do histórico');
       }
       const musicColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(music)', (error, rows) => error ? reject(error) : resolve(rows)));
-      const musicMigrations = [['hymn_number', 'INTEGER'], ['source', 'TEXT'], ['congregation_score', 'INTEGER'], ['recommended_opening', 'INTEGER'], ['recommended_offertory', 'INTEGER'], ['recommended_communion', 'INTEGER'], ['recommended_preaching', 'INTEGER'], ['recommended_closing', 'INTEGER'], ['preferred_service_types', 'TEXT'], ['difficulty_band', 'INTEGER'], ['difficulty_vocal', 'INTEGER']];
+      const musicMigrations = [['hymn_number', 'INTEGER'], ['source', 'TEXT'], ['congregation_score', 'INTEGER'], ['recommended_opening', 'INTEGER'], ['recommended_offertory', 'INTEGER'], ['recommended_communion', 'INTEGER'], ['recommended_preaching', 'INTEGER'], ['recommended_closing', 'INTEGER'], ['preferred_service_types', 'TEXT'], ['difficulty_band', 'INTEGER'], ['difficulty_vocal', 'INTEGER'], ['chords', 'TEXT']];
       for (const [name, definition] of musicMigrations) if (!musicColumns.some((column) => column.name === name)) await executeSql(`ALTER TABLE music ADD COLUMN ${name} ${definition}`, `a migração do campo music.${name}`);
       const userColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(users)', (error, rows) => error ? reject(error) : resolve(rows)));
       if (!userColumns.some((column) => column.name === 'username')) await executeSql('ALTER TABLE users ADD COLUMN username TEXT', 'a migração de login');
