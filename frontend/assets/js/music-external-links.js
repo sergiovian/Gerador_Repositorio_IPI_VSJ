@@ -27,7 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const table = [...document.querySelectorAll('#app table')].find(item => item.querySelector('th')?.textContent.trim() === 'Título'); if (!table) return;
     const songs = await API.get('/music'), byId = new Map(songs.map(item => [String(item.id), item]));
     table.querySelectorAll('.del[data-id]').forEach(removeButton => {
-      const actions = removeButton.parentElement; actions.querySelectorAll('.view-lyrics,.music-search-links').forEach(element => element.remove());
+      const actions = removeButton.parentElement;
+      // Abrir um dropdown do Bootstrap também altera o DOM. Não recrie os botões
+      // nesse momento, pois a recriação fecha o menu antes do clique do usuário.
+      if (actions.querySelector('.music-search-links')) return;
+      actions.querySelectorAll('.view-lyrics').forEach(element => element.remove());
       const song = byId.get(removeButton.dataset.id); if (!song) return; const terms = `${song.title} ${song.artist_name || ''}`.trim(), encoded = encodeURIComponent(terms);
       removeButton.insertAdjacentHTML('beforebegin', `<span class="music-search-links"><span class="btn-group me-1"><button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-card-text me-1"></i>Letra</button><ul class="dropdown-menu"><li><button class="dropdown-item own-lyrics" data-id="${song.id}"><i class="bi bi-pencil-square me-2"></i>Letra própria</button></li><li><a class="dropdown-item" href="https://www.letras.mus.br/?q=${encoded}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right me-2"></i>Letras.com.br</a></li></ul></span><span class="btn-group me-1"><button class="btn btn-sm btn-outline-success dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-music-note-list me-1"></i>Cifra</button><ul class="dropdown-menu"><li><button class="dropdown-item own-chords" data-id="${song.id}"><i class="bi bi-pencil-square me-2"></i>Cifra própria</button></li><li><a class="dropdown-item" href="https://www.cifraclub.com.br/?q=${encoded}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right me-2"></i>Cifra Club</a></li></ul></span><button class="btn btn-sm btn-outline-danger me-1 listen-music" data-terms="${esc(terms)}"><i class="bi bi-headphones me-1"></i>Ouvir</button></span>`);
     });
