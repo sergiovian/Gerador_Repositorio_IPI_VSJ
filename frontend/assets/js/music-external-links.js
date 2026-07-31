@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.querySelector('.chord-palette').insertAdjacentElement('afterend', grid);
     const lyricLines = String(music.lyrics || '').split(/\r?\n/).filter(line => line.trim()); let activeSlot = null;
     const palette = form.querySelector('.chord-palette'); palette.classList.add('d-none');
+    const clearChord = document.createElement('button'); clearChord.type = 'button'; clearChord.className = 'btn btn-sm btn-outline-danger chord-clear'; clearChord.innerHTML = '<i class="bi bi-eraser me-1"></i>Limpar acorde'; palette.append(clearChord);
     const oldLines = String(music.chords || '').split(/\r?\n/);
     const previousChordLine = lyric => { const index = oldLines.findIndex(line => line.trim() === lyric.trim()); return index > 0 ? oldLines[index - 1] : ''; };
     const slots = [];
@@ -66,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
     draw(); area.oninput = draw;
+    clearChord.onclick = () => { if (!activeSlot) return; activeSlot.dataset.chord = ''; activeSlot.textContent = ''; syncFromGrid(); activeSlot.focus(); };
     box.querySelectorAll('.chord-note').forEach(button => button.onclick = () => { if (activeSlot) { activeSlot.dataset.chord = button.dataset.note; activeSlot.textContent = button.dataset.note; syncFromGrid(); activeSlot.focus(); return; } const start = area.selectionStart, end = area.selectionEnd, note = `${button.dataset.note} `; area.setRangeText(note, start, end, 'end'); area.focus(); draw(); });
     form.onsubmit = async event => { event.preventDefault(); const save = form.querySelector('[type="submit"]'); save.disabled = true; try { await API.put(`/music/${music.id}`, { ...details(music), chords: area.value }); modal.hide(); UI.alert('Cifra própria salva.'); await addLinks(); } catch (error) { UI.alert(error.message, 'danger'); save.disabled = false; } };
     box.addEventListener('hidden.bs.modal', () => box.remove(), { once: true }); modal.show();
