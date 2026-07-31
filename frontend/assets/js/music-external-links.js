@@ -57,7 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       row.append(slotRow, lyric); grid.append(row);
     });
-    if (!lyricLines.length) grid.insertAdjacentHTML('beforeend', '<div class="alert alert-warning mb-0">Cadastre a letra própria da música primeiro para aparecerem os campos de acordes.</div>');
+    if (!lyricLines.length) {
+      grid.insertAdjacentHTML('beforeend', '<div class="alert alert-warning mb-0"><strong>Esta música ainda não possui letra própria.</strong><br>Cole a letra na caixa abaixo e clique em <em>Criar campos de acordes</em>.</div><button type="button" class="btn btn-outline-success mt-3" id="create-chord-slots"><i class="bi bi-grid-3x3-gap me-1"></i>Criar campos de acordes com a letra colada</button>');
+      grid.querySelector('#create-chord-slots').onclick = () => {
+        const lyrics = area.value.trim();
+        if (!lyrics) { UI.alert('Cole a letra da música na caixa abaixo antes de criar os campos.', 'warning'); area.focus(); return; }
+        music.lyrics = lyrics; music.chords = ''; modal.hide(); setTimeout(() => editChords(music), 250);
+      };
+    }
     draw(); area.oninput = draw;
     box.querySelectorAll('.chord-note').forEach(button => button.onclick = () => { if (activeSlot) { activeSlot.value = button.dataset.note; syncFromGrid(); activeSlot.focus(); return; } const start = area.selectionStart, end = area.selectionEnd, note = `${button.dataset.note} `; area.setRangeText(note, start, end, 'end'); area.focus(); draw(); });
     form.onsubmit = async event => { event.preventDefault(); const save = form.querySelector('[type="submit"]'); save.disabled = true; try { await API.put(`/music/${music.id}`, { ...details(music), chords: area.value }); modal.hide(); UI.alert('Cifra própria salva.'); await addLinks(); } catch (error) { UI.alert(error.message, 'danger'); save.disabled = false; } };
