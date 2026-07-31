@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.innerHTML = '<div class="small fw-semibold text-secondary mb-2">Toque no quadradinho acima da palavra e digite ou escolha um acorde:</div>';
     form.querySelector('.chord-palette').insertAdjacentElement('afterend', grid);
     const lyricLines = String(music.lyrics || '').split(/\r?\n/).filter(line => line.trim()); let activeSlot = null;
+    const palette = form.querySelector('.chord-palette'); palette.classList.add('d-none');
     const oldLines = String(music.chords || '').split(/\r?\n/);
     const previousChordLine = lyric => { const index = oldLines.findIndex(line => line.trim() === lyric.trim()); return index > 0 ? oldLines[index - 1] : ''; };
     const slots = [];
@@ -44,16 +45,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     lyricLines.forEach((line, lineIndex) => {
       const row = document.createElement('div'); row.className = 'chord-grid-line';
-      const chordLine = previousChordLine(line); let match;
-      const matcher = /\S+/g;
-      while ((match = matcher.exec(line))) {
-        const word = match[0], column = match.index, saved = chordLine.slice(column).match(/^\s*([A-G][#b]?(?:m|M|maj7|sus4|sus2|add9|7|9|6|dim|aug)?)/)?.[1] || '';
-        const cell = document.createElement('label'); cell.className = 'chord-word';
-        cell.innerHTML = `<input class="chord-slot" maxlength="8" data-line="${lineIndex}" data-column="${column}" value="${esc(saved)}" aria-label="Acorde acima de ${esc(word)}"><span>${esc(word)}</span>`;
-        row.append(cell); const slot = cell.querySelector('.chord-slot'); slots.push(slot);
-        slot.onfocus = () => { activeSlot = slot; }; slot.oninput = syncFromGrid;
+      const slotRow = document.createElement('div'); slotRow.className = 'chord-slot-row';
+      const lyric = document.createElement('div'); lyric.className = 'chord-lyric-line'; lyric.textContent = line;
+      const chordLine = previousChordLine(line), step = 4, count = Math.ceil(Math.max(line.length, 20) / step);
+      for (let index = 0; index < count; index++) {
+        const column = index * step, saved = chordLine.slice(column).match(/^\s*([A-G][#b]?(?:m|M|maj7|sus4|sus2|add9|7|9|6|dim|aug)?)/)?.[1] || '';
+        const slot = document.createElement('input'); slot.className = 'chord-slot'; slot.maxLength = 8; slot.dataset.line = lineIndex; slot.dataset.column = column; slot.value = saved; slot.setAttribute('aria-label', `Acorde na posição ${index + 1} da linha ${lineIndex + 1}`);
+        slot.onfocus = () => { activeSlot = slot; palette.classList.remove('d-none'); };
+        slot.onclick = () => { activeSlot = slot; palette.classList.remove('d-none'); };
+        slot.oninput = syncFromGrid; slotRow.append(slot); slots.push(slot);
       }
-      grid.append(row);
+      row.append(slotRow, lyric); grid.append(row);
     });
     if (!lyricLines.length) grid.insertAdjacentHTML('beforeend', '<div class="alert alert-warning mb-0">Cadastre a letra própria da música primeiro para aparecerem os campos de acordes.</div>');
     draw(); area.oninput = draw;
