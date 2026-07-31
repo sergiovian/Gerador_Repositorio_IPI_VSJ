@@ -24,8 +24,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const search = document.createElement('button'); search.type = 'button'; search.className = 'btn btn-outline-primary mb-3'; search.innerHTML = '<i class="bi bi-search me-1"></i>Pesquisar letra online';
     form.querySelector('.modal-body').insertAdjacentElement('afterbegin', search); search.onclick = () => openLyricsBrowser(music);
     const draw = () => { preview.textContent = area.value || 'A cifra aparecerá aqui.'; };
+    const grid = document.createElement('div'); grid.className = 'chord-grid mb-3';
+    grid.innerHTML = '<div class="small fw-semibold text-secondary mb-2">Toque no quadradinho acima da palavra e digite ou escolha um acorde:</div>';
+    form.querySelector('.chord-palette').insertAdjacentElement('afterend', grid);
+    const lyricLines = String(music.lyrics || '').split(/\r?\n/).filter(line => line.trim()); let activeSlot = null;
+    const oldLines = String(music.chords || '').split(/\r?\n/);
+    const previousChordLine = lyric => { const index = oldLines.findIndex(line => line.trim() === lyric.trim()); return index > 0 ? oldLines[index - 1] : ''; };
+    const slots = [];
+    function syncFromGrid() {
+      const grouped = lyricLines.map((line, lineIndex) => {
+        const chars = Array(Math.max(line.length + 20, 1)).fill(' ');
+        slots.filter(slot => Number(slot.dataset.line) === lineIndex && slot.value.trim()).forEach(slot => {
+          const start = Number(slot.dataset.column), chord = slot.value.trim();
+          [...chord].forEach((character, index) => { chars[start + index] = character; });
+        });
+        return `${chars.join('').replace(/\s+$/, '')}\n${line}`;
+      });
+      area.value = grouped.join('\n\n'); draw();
+    }
+    lyricLines.forEach((line, lineIndex) => {
+      const row = document.createElement('div'); row.className = 'chord-grid-line';
+      const chordLine = previousChordLine(line); let match;
+      const matcher = /\S+/g;
+      while ((match = matcher.exec(line))) {
+        const word = match[0], column = match.index, saved = chordLine.slice(column).match(/^\s*([A-G][#b]?(?:m|M|maj7|sus4|sus2|add9|7|9|6|dim|aug)?)/)?.[1] || '';
+        const cell = document.createElement('label'); cell.className = 'chord-word';
+        cell.innerHTML = `<input class="chord-slot" maxlength="8" data-line="${lineIndex}" data-column="${column}" value="${esc(saved)}" aria-label="Acorde acima de ${esc(word)}"><span>${esc(word)}</span>`;
+        row.append(cell); const slot = cell.querySelector('.chord-slot'); slots.push(slot);
+        slot.onfocus = () => { activeSlot = slot; }; slot.oninput = syncFromGrid;
+      }
+      grid.append(row);
+    });
+    if (!lyricLines.length) grid.insertAdjacentHTML('beforeend', '<div class="alert alert-warning mb-0">Cadastre a letra própria da música primeiro para aparecerem os campos de acordes.</div>');
     draw(); area.oninput = draw;
-    box.querySelectorAll('.chord-note').forEach(button => button.onclick = () => { const start = area.selectionStart, end = area.selectionEnd, note = `${button.dataset.note} `; area.setRangeText(note, start, end, 'end'); area.focus(); draw(); });
+    box.querySelectorAll('.chord-note').forEach(button => button.onclick = () => { if (activeSlot) { activeSlot.value = button.dataset.note; syncFromGrid(); activeSlot.focus(); return; } const start = area.selectionStart, end = area.selectionEnd, note = `${button.dataset.note} `; area.setRangeText(note, start, end, 'end'); area.focus(); draw(); });
     form.onsubmit = async event => { event.preventDefault(); const save = form.querySelector('[type="submit"]'); save.disabled = true; try { await API.put(`/music/${music.id}`, { ...details(music), chords: area.value }); modal.hide(); UI.alert('Cifra própria salva.'); await addLinks(); } catch (error) { UI.alert(error.message, 'danger'); save.disabled = false; } };
     box.addEventListener('hidden.bs.modal', () => box.remove(), { once: true }); modal.show();
   }
