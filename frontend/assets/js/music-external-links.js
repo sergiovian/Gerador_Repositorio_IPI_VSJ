@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function syncFromGrid() {
       const grouped = lyricLines.map((line, lineIndex) => {
         const chars = Array(Math.max(line.length + 20, 1)).fill(' ');
-        slots.filter(slot => Number(slot.dataset.line) === lineIndex && slot.value.trim()).forEach(slot => {
-          const start = Number(slot.dataset.column), chord = slot.value.trim();
+        slots.filter(slot => Number(slot.dataset.line) === lineIndex && String(slot.dataset.chord || '').trim()).forEach(slot => {
+          const start = Number(slot.dataset.column), chord = String(slot.dataset.chord || '').trim();
           [...chord].forEach((character, index) => { chars[start + index] = character; });
         });
         return `${chars.join('').replace(/\s+$/, '')}\n${line}`;
@@ -50,10 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const chordLine = previousChordLine(line), step = 4, count = Math.ceil(Math.max(line.length, 20) / step);
       for (let index = 0; index < count; index++) {
         const column = index * step, saved = chordLine.slice(column).match(/^\s*([A-G][#b]?(?:m|M|maj7|sus4|sus2|add9|7|9|6|dim|aug)?)/)?.[1] || '';
-        const slot = document.createElement('input'); slot.className = 'chord-slot'; slot.maxLength = 8; slot.dataset.line = lineIndex; slot.dataset.column = column; slot.value = saved; slot.setAttribute('aria-label', `Acorde na posição ${index + 1} da linha ${lineIndex + 1}`);
+        const slot = document.createElement('button'); slot.type = 'button'; slot.className = 'chord-slot'; slot.dataset.line = lineIndex; slot.dataset.column = column; slot.dataset.chord = saved; slot.textContent = saved; slot.setAttribute('aria-label', `Acorde na posição ${index + 1} da linha ${lineIndex + 1}`);
         slot.onfocus = () => { activeSlot = slot; palette.classList.remove('d-none'); };
         slot.onclick = () => { activeSlot = slot; palette.classList.remove('d-none'); };
-        slot.oninput = syncFromGrid; slotRow.append(slot); slots.push(slot);
+        slotRow.append(slot); slots.push(slot);
       }
       row.append(slotRow, lyric); grid.append(row);
     });
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
     draw(); area.oninput = draw;
-    box.querySelectorAll('.chord-note').forEach(button => button.onclick = () => { if (activeSlot) { activeSlot.value = button.dataset.note; syncFromGrid(); activeSlot.focus(); return; } const start = area.selectionStart, end = area.selectionEnd, note = `${button.dataset.note} `; area.setRangeText(note, start, end, 'end'); area.focus(); draw(); });
+    box.querySelectorAll('.chord-note').forEach(button => button.onclick = () => { if (activeSlot) { activeSlot.dataset.chord = button.dataset.note; activeSlot.textContent = button.dataset.note; syncFromGrid(); activeSlot.focus(); return; } const start = area.selectionStart, end = area.selectionEnd, note = `${button.dataset.note} `; area.setRangeText(note, start, end, 'end'); area.focus(); draw(); });
     form.onsubmit = async event => { event.preventDefault(); const save = form.querySelector('[type="submit"]'); save.disabled = true; try { await API.put(`/music/${music.id}`, { ...details(music), chords: area.value }); modal.hide(); UI.alert('Cifra própria salva.'); await addLinks(); } catch (error) { UI.alert(error.message, 'danger'); save.disabled = false; } };
     box.addEventListener('hidden.bs.modal', () => box.remove(), { once: true }); modal.show();
   }
