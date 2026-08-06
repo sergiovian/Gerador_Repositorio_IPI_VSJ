@@ -10,7 +10,7 @@ databaseReady
   .then(async () => {
     await ensureIpiUser();
     app.listen(PORT, () => {
-      console.log(`Louvor Inteligente disponível em http://localhost:${PORT}`);
+      console.log(`Gestor de Cultos disponível em http://localhost:${PORT}`);
     });
   })
   .catch((error) => {

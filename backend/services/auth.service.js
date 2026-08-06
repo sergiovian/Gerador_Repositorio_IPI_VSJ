@@ -21,6 +21,24 @@ async function login(username, password) {
   return { userId: user.id, churchId: user.church_id, username: user.username, churchName: user.church_name, role: user.role };
 }
 
+async function currentUser(userId) {
+  const user = await db.get(`SELECT u.id,u.church_id,u.name,u.username,u.role,u.active,
+    c.name church_name,c.active church_active,c.logo_file,c.updated_at church_updated_at
+    FROM users u JOIN churches c ON c.id=u.church_id WHERE u.id=?`, [Number(userId)]);
+  if (!user || !user.active || !user.church_active) return null;
+  return {
+    userId: user.id,
+    churchId: user.church_id,
+    name: user.name,
+    username: user.username,
+    churchName: user.church_name,
+    role: user.role,
+    churchLogoUrl: user.logo_file
+      ? `/api/church/profile/logo?v=${encodeURIComponent(user.church_updated_at || '')}`
+      : user.church_id === 1 ? '/assets/img/logo-ipi.jpg' : '/assets/img/app-mark.svg'
+  };
+}
+
 async function ensureIpiUser() {
   const current = await db.get('SELECT id FROM users WHERE username=?', ['ipivsj']);
   const passwordHash = await hash('852456');
@@ -28,4 +46,4 @@ async function ensureIpiUser() {
   else await db.run('UPDATE users SET church_id=1,password_hash=?,role=?,active=1 WHERE id=?', [passwordHash, 'SUPER_ADMIN', current.id]);
 }
 
-module.exports = { ensureIpiUser, login, register };
+module.exports = { currentUser, ensureIpiUser, login, register };

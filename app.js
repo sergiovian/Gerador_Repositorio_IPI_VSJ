@@ -10,6 +10,7 @@ const youtubeRoutes = require('./backend/routes/youtube.routes');
 const repertoireEditRoutes = require('./backend/routes/repertoire-edit.routes');
 const projectionRoutes = require('./backend/routes/projection.routes');
 const liturgyRoutes = require('./backend/routes/liturgy.routes');
+const churchRoutes = require('./backend/routes/church.routes');
 const { errorHandler, notFoundHandler } = require('./backend/middlewares/error.middleware');
 
 const app = express();
@@ -28,14 +29,21 @@ app.post('/api/auth/logout', (req, res) => {
   res.status(204).send();
 });
 app.get('/login', (req, res) => res.sendFile(path.join(frontendPath, 'login.html')));
-app.use((req, res, next) => {
-  const user = sessionUser(req);
-  if (user) { req.user = user; return runChurchContext(user.churchId, next); }
+app.use(async (req, res, next) => {
+  const session = sessionUser(req);
+  if (session) {
+    try {
+      const user = await Auth.currentUser(session.userId);
+      if (user) { req.user = user; return runChurchContext(user.churchId, next); }
+    } catch (error) { return next(error); }
+  }
   if (req.path === '/login' || req.path.startsWith('/assets/') || req.path === '/api/auth/user-login' || req.path === '/api/auth/register') return next();
   if (req.path.startsWith('/api/')) return res.status(401).json({ message: 'Acesso não autorizado.' });
   return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
 });
 app.use(express.static(frontendPath));
+app.get('/api/auth/me', (req, res) => res.json({ data: req.user }));
+app.use('/api/church', churchRoutes);
 app.use('/api/artists', artistRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/admin', adminRoutes);

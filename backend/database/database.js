@@ -54,6 +54,8 @@ async function initializeDatabase() {
       const seed = fs.readFileSync(seedPath, 'utf8');
 
       await executeSql(schema, 'o schema do banco de dados');
+      const churchColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(churches)', (error, rows) => error ? reject(error) : resolve(rows)));
+      if (!churchColumns.some((column) => column.name === 'logo_file')) await executeSql('ALTER TABLE churches ADD COLUMN logo_file TEXT', 'a migração do logo da igreja');
       const columns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(music_history)', (error, rows) => error ? reject(error) : resolve(rows)));
       if (!columns.some((column) => column.name === 'origin')) {
         await executeSql("ALTER TABLE music_history ADD COLUMN origin TEXT NOT NULL DEFAULT 'MANUAL'", 'a migração do histórico');

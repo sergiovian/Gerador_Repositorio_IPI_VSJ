@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-labelledby="title">
+  <title id="title">Gestor de Cultos</title>
+  <defs><linearGradient id="g" x1="28" y1="20" x2="165" y2="174" gradientUnits="userSpaceOnUse"><stop stop-color="#df2344"/><stop offset="1" stop-color="#850019"/></linearGradient></defs>
+  <rect width="192" height="192" rx="45" fill="url(#g)"/>
+  <path d="M58 42h76a14 14 0 0 1 14 14v81a14 14 0 0 1-14 14H58a14 14 0 0 1-14-14V56a14 14 0 0 1 14-14Z" fill="#fff" opacity=".97"/>
+  <path d="M44 72h104M69 33v28M123 33v28" fill="none" stroke="#850019" stroke-width="10" stroke-linecap="round"/>
+  <path d="m69 111 18 18 38-45" fill="none" stroke="#c8102e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

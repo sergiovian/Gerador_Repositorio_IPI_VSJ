@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS churches (
   name TEXT NOT NULL,
   city TEXT,
   state TEXT,
+  logo_file TEXT,
   active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
