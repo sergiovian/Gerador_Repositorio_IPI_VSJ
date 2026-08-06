@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const crypto = require('crypto');
 const Auth = require('./backend/services/auth.service');
 const { runChurchContext } = require('./backend/constants/church-context');
 const artistRoutes = require('./backend/routes/artist.routes');
@@ -16,8 +17,11 @@ const { errorHandler, notFoundHandler } = require('./backend/middlewares/error.m
 
 const app = express();
 const frontendPath = path.join(__dirname, 'frontend');
-const sessionSecret = process.env.SESSION_SECRET || 'troque-esta-chave-em-producao';
-const crypto = require('crypto');
+const configuredSessionSecret = process.env.SESSION_SECRET;
+if (process.env.NODE_ENV === 'production' && (!configuredSessionSecret || configuredSessionSecret.length < 32)) {
+  throw new Error('SESSION_SECRET deve ter ao menos 32 caracteres em produção.');
+}
+const sessionSecret = configuredSessionSecret || crypto.randomBytes(32).toString('hex');
 const sessionToken = user => crypto.createHmac('sha256', sessionSecret).update(JSON.stringify(user)).digest('hex')+'.'+Buffer.from(JSON.stringify(user)).toString('base64url');
 const sessionUser = req => { const value=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('louvor_session='))?.slice(15); if(!value)return null; const [sig,data]=value.split('.'); const raw=Buffer.from(data||'','base64url').toString(); return sig===crypto.createHmac('sha256',sessionSecret).update(raw).digest('hex')?JSON.parse(raw):null; };
 

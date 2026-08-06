@@ -1,47 +1,52 @@
-# Louvor Inteligente
+# Gestor de Cultos
 
-Sistema web para organizar músicas, cultos e sugestões de repertório da Igreja Presbiteriana Independente de Vila São José.
+Aplicação web multi-igreja para planejar, ensaiar, executar e projetar cultos. O sistema reúne biblioteca de músicas, liturgia, avisos, apresentação, Bíblia, projeção controlada por celular e acompanhamento do culto ao vivo.
 
 ## Tecnologias
 
-Node.js, Express, SQLite, HTML5, CSS3, Bootstrap 5 e JavaScript puro.
+- Node.js 18, Express 4 e JavaScript CommonJS.
+- SQLite 3 em arquivo local.
+- HTML, CSS e JavaScript puro no frontend, com Bootstrap 5 em partes da interface.
+- PM2 e Nginx na VM de produção.
+- Importação de arquivos com `multer`, `officeparser`, `adm-zip` e `fast-xml-parser`.
 
 ## Início rápido
 
-```bash
+```powershell
 npm install
-copy .env.example .env
+Copy-Item .env.example .env
+npm run db:init
 npm start
 ```
 
-Acesse `http://localhost:3000`.
+Preencha `SESSION_SECRET` no `.env`. Em um banco novo, defina temporariamente `BOOTSTRAP_ADMIN_PASSWORD` com pelo menos 12 caracteres. Acesse `http://localhost:3000`.
 
 ## Comandos
 
-| Comando | Uso |
+| Comando | Finalidade |
 | --- | --- |
 | `npm start` | Inicia a aplicação. |
-| `npm run dev` | Inicia com recarga automática. |
-| `npm test` | Executa testes com banco SQLite isolado. |
-| `npm run db:init` | Garante schema e dados iniciais. |
-| `npm run db:seed` | Executa a inicialização idempotente. |
+| `npm run dev` | Inicia com recarga automática via Nodemon. |
+| `npm test` | Executa os testes Node com SQLite isolado. |
+| `npm run db:init` | Inicializa/migra o banco de forma idempotente. |
+| `npm run db:seed` | Executa novamente a inicialização idempotente. |
+| `npm run db:import:ipi` | Executa o importador específico legado da IPI. |
 
-## Funcionalidades
+## Principais recursos
 
-- Artistas, tags e catálogo unificado de músicas/hinos.
-- Associação de múltiplas tags a músicas.
-- Cultos, sermões, configurações e tipos de culto.
-- Geração explicável de repertório com bloqueio de repetição.
-- Repertórios em rascunho, confirmados e executados.
-- Histórico automático e manual protegido por origem.
-- Dashboard e interface responsiva.
+- Cadastro de igrejas e usuários com perfis `MEMBER`, `ADMIN` e `SUPER_ADMIN`.
+- Identidade visual por igreja, incluindo nome e logotipo.
+- Biblioteca de músicas, letras, cifras próprias, tags e artistas no fluxo da música.
+- Importação Holyrics JSON, PowerPoint, Word e TXT, conforme o fluxo usado.
+- Planejamento de culto, geração e edição de repertório, liturgia, anexos e comunicados.
+- Central do culto com preparação de ensaio, ordem unificada e modo ao vivo.
+- Projeção em segundo monitor, controle remoto por celular/QR, Bíblia e afinador.
+- Exportação de culto/repertório em PDF e planilha.
 
-## Fluxo principal
+## Segurança e dados
 
-Cadastre músicas → crie um culto → gere a sugestão → salve o rascunho → confirme → execute → consulte o histórico.
+Nunca versione `.env`, bancos SQLite, uploads, backups, chaves SSH ou credenciais. O `.gitignore` cobre esses artefatos. O banco de produção e os uploads ficam somente na VM e precisam de backup independente.
 
-## Limitações atuais
+## Continuidade
 
-Não há autenticação nesta versão. O contexto da primeira igreja é centralizado no backend e não é exposto à interface.
-
-Consulte [INSTALL.md](INSTALL.md), [API.md](API.md) e [TESTING.md](TESTING.md) para detalhes.
+Leia primeiro [CONTEXTO_PROJETO.md](CONTEXTO_PROJETO.md). As regras para agentes e manutenção estão em [AGENTS.md](AGENTS.md). Alguns documentos antigos (`PROJECT.md`, `DOMAIN.md`, `DATAFLOW.md`, `API.md`, `INSTALL.md` e `TESTING.md`) ainda precisam ser alinhados com a arquitetura multi-igreja atual.

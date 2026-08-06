@@ -3,12 +3,48 @@ node_modules/
 
 # Segredos e configurações locais
 .env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+ssh_host_*_key
+*.token
+.token
+tokens/
+credentials/
+credentials*.json
+secrets*.json
+.npmrc
+.pypirc
 
-# Arquivos de banco de dados SQLite gerados em execução
+# Bancos SQLite e arquivos auxiliares gerados em execução
 backend/database/*.db
 backend/database/*.sqlite
 backend/database/*.sqlite3
+backend/database/*.db-journal
+backend/database/*.db-wal
+backend/database/*.db-shm
 test/*.db
 
-# Logs do npm
+# Backups e exportações que podem conter dados sensíveis
+backend/database/backups/
+backups/
+*.bak
+*.backup
+*.dump
+*.sql.gz
+
+# Uploads e anexos dos usuários
+backend/uploads/
+uploads/
+
+# Logs
 npm-debug.log*
+*.log
+
+# Cópia local aninhada do repositório
+/Gerador_Repositorio_IPI_VSJ/

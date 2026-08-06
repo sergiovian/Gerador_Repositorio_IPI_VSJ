@@ -2,8 +2,11 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 
 process.env.DATABASE_PATH = 'test/louvor-inteligente.test.db';
+const testAdminPassword = crypto.randomBytes(24).toString('hex');
+process.env.BOOTSTRAP_ADMIN_PASSWORD = testAdminPassword;
 const testDatabase = path.resolve(process.cwd(), process.env.DATABASE_PATH);
 fs.rmSync(testDatabase, { force: true });
 
@@ -40,7 +43,7 @@ test('sessão autenticada expõe permissão e permite atualizar a própria igrej
   const login = await fetch(`${baseUrl}/api/auth/user-login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'ipivsj', password: '852456' })
+    body: JSON.stringify({ username: 'ipivsj', password: testAdminPassword })
   });
   assert.equal(login.status, 200);
   const cookie = login.headers.get('set-cookie').split(';')[0];
