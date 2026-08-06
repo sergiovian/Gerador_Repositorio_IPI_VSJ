@@ -194,6 +194,8 @@ CREATE TABLE IF NOT EXISTS repertoires (
   quality_score INTEGER NOT NULL DEFAULT 0,
   generation_context_json TEXT NOT NULL DEFAULT '{}',
   liturgy_json TEXT NOT NULL DEFAULT '[]',
+  rehearsal_json TEXT NOT NULL DEFAULT '{}',
+  timeline_json TEXT NOT NULL DEFAULT '[]',
   presentation_file TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -229,6 +231,15 @@ CREATE INDEX IF NOT EXISTS idx_decision_logs_music_id ON decision_logs (music_id
 CREATE INDEX IF NOT EXISTS idx_decision_logs_church_created_at ON decision_logs (church_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_repertoires_church_status ON repertoires (church_id, status);
 CREATE INDEX IF NOT EXISTS idx_repertoire_items_repertoire ON repertoire_items (repertoire_id, position);
+CREATE TABLE IF NOT EXISTS service_live_states (
+  repertoire_id INTEGER PRIMARY KEY,
+  current_index INTEGER NOT NULL DEFAULT 0,
+  running INTEGER NOT NULL DEFAULT 0 CHECK (running IN (0, 1)),
+  started_at TEXT,
+  item_started_at TEXT,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (repertoire_id) REFERENCES repertoires (id) ON DELETE CASCADE
+);
 CREATE TRIGGER IF NOT EXISTS trg_churches_updated_at
 AFTER UPDATE ON churches FOR EACH ROW WHEN NEW.updated_at = OLD.updated_at
 BEGIN

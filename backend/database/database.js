@@ -78,6 +78,9 @@ async function initializeDatabase() {
       const repertoireColumns = await new Promise((resolve, reject) => database.all('PRAGMA table_info(repertoires)', (error, rows) => error ? reject(error) : resolve(rows)));
       if (!repertoireColumns.some((column) => column.name === 'liturgy_json')) await executeSql("ALTER TABLE repertoires ADD COLUMN liturgy_json TEXT NOT NULL DEFAULT '[]'", 'a liturgia do culto');
       if (!repertoireColumns.some((column) => column.name === 'presentation_file')) await executeSql('ALTER TABLE repertoires ADD COLUMN presentation_file TEXT', 'o anexo da apresentação');
+      if (!repertoireColumns.some((column) => column.name === 'rehearsal_json')) await executeSql("ALTER TABLE repertoires ADD COLUMN rehearsal_json TEXT NOT NULL DEFAULT '{}'", 'o planejamento do ensaio');
+      if (!repertoireColumns.some((column) => column.name === 'timeline_json')) await executeSql("ALTER TABLE repertoires ADD COLUMN timeline_json TEXT NOT NULL DEFAULT '[]'", 'a linha do tempo do culto');
+      await executeSql("CREATE TABLE IF NOT EXISTS service_live_states (repertoire_id INTEGER PRIMARY KEY,current_index INTEGER NOT NULL DEFAULT 0,running INTEGER NOT NULL DEFAULT 0,started_at TEXT,item_started_at TEXT,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(repertoire_id) REFERENCES repertoires(id) ON DELETE CASCADE)", 'o estado ao vivo do culto');
       await executeSql(seed, 'os dados iniciais do banco de dados');
 
       console.log(`Banco de dados inicializado em: ${databasePath}`);

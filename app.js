@@ -11,6 +11,7 @@ const repertoireEditRoutes = require('./backend/routes/repertoire-edit.routes');
 const projectionRoutes = require('./backend/routes/projection.routes');
 const liturgyRoutes = require('./backend/routes/liturgy.routes');
 const churchRoutes = require('./backend/routes/church.routes');
+const serviceCenterRoutes = require('./backend/routes/service-center.routes');
 const { errorHandler, notFoundHandler } = require('./backend/middlewares/error.middleware');
 
 const app = express();
@@ -44,6 +45,7 @@ app.use(async (req, res, next) => {
 app.use(express.static(frontendPath));
 app.get('/api/auth/me', (req, res) => res.json({ data: req.user }));
 app.use('/api/church', churchRoutes);
+app.use('/api/service-center', serviceCenterRoutes);
 app.use('/api/artists', artistRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/admin', adminRoutes);

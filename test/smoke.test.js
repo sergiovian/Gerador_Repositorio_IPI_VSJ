@@ -12,6 +12,7 @@ const db = require('../backend/models/db.model');
 const service = require('../backend/services/mvp.service');
 const churchService = require('../backend/services/church.service');
 const authService = require('../backend/services/auth.service');
+const serviceCenter = require('../backend/services/service-center.service');
 const app = require('../app');
 const { runChurchContext } = require('../backend/constants/church-context');
 const inDefaultChurch = (work) => runChurchContext(1, work);
@@ -31,7 +32,7 @@ test.before(async () => {
 
 test.after(async () => {
   await new Promise(resolve => httpServer.close(resolve));
-  getDatabase().close();
+  await new Promise((resolve, reject) => getDatabase().close(error => error ? reject(error) : resolve()));
   fs.rmSync(testDatabase, { force: true });
 });
 
@@ -91,4 +92,25 @@ test('motor informa falta de candidatos em banco vazio', async () => {
   const generated = await inDefaultChurch(() => service.generate({ hymns: 1, upbeat: 2, calm: 2 }));
   assert.equal(generated.items.length, 0);
   assert.equal(generated.warnings.length, 0);
+});
+
+test('central do culto salva ensaio, ordem e andamento ao vivo', async () => {
+  await inDefaultChurch(async () => {
+    const artist = await db.run('INSERT INTO artists(church_id,name) VALUES(?,?)', [1, 'Equipe Teste']);
+    const music = await db.run('INSERT INTO music(church_id,title,artist_id,type,energy,active) VALUES(?,?,?,?,?,1)', [1, 'Música do Ensaio', artist.id, 'LOUVOR', 3]);
+    const serviceRow = await db.run("INSERT INTO services(church_id,service_type_id,service_date,status) VALUES(1,1,'2026-08-09','PLANNED')");
+    const repertoire = await db.run("INSERT INTO repertoires(church_id,service_id,status,quality_score,generation_context_json,liturgy_json) VALUES(1,?,'DRAFT',100,'{}','[]')", [serviceRow.id]);
+    await db.run("INSERT INTO repertoire_items(repertoire_id,music_id,position,role,score,reasons_json,warnings_json) VALUES(?,?,1,'LOUVOR',100,'[]','[]')", [repertoire.id, music.id]);
+    const center = await serviceCenter.getCenter(repertoire.id);
+    assert.equal(center.items.length, 1);
+    assert.equal(center.timeline[0].type, 'MUSIC');
+    const rehearsal = await serviceCenter.saveRehearsal(repertoire.id, { checklist: { sound: true }, songs: { [music.id]: { key: 'G', bpm: 96, repetitions: 2, rehearsed: true } } });
+    assert.equal(rehearsal.checklist.sound, true);
+    assert.equal(rehearsal.songs[music.id].bpm, 96);
+    const timeline = await serviceCenter.saveTimeline(repertoire.id, center.timeline);
+    assert.equal(timeline.length, 1);
+    const live = await serviceCenter.saveLive(repertoire.id, { currentIndex: 0, running: true });
+    assert.equal(live.running, true);
+    assert.ok(live.startedAt);
+  });
 });
